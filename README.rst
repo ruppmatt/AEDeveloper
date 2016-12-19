@@ -29,11 +29,11 @@ where x is the python subversion.
 
 You should then be able to create and use the python virtual environment.  To
 do so you must first setup the venv folder, which will store our virtual
-environment libraries;
+environment libraries:
   virtualenv env  #virtualenv is a program installed by pip; env is the folder
                   #to Create
 
-If you are having problems, you can manually specify the python executable
+If you are having problems, you can manually specify the python executable:
   virtualenv --python=/opt/local/bin/python3 venv  #For example
 
 To switch into the virtual environment:
@@ -66,28 +66,26 @@ Use the 'download' section of the mysql website to download the actual DMG
 image.
 
 Once installed, start the mysql server on port 3306:
-  sudo mysqld_safe
+  shell> sudo mysqld_safe --bind-address=127.0.0.1
 
 Now you have to change the temporary password provided by the installer.  On
 my machine (macOS), all of the executables are installed in:
-  /usr/local/mysql/bin
+  shell> /usr/local/mysql/bin
 
 These files must be run as root because of how they were installed.  There are
 directions on the Oracle MySQL site to change this behavior.
 
 To change the password:
-  /usr/local/mysql/bin/mysql -u root -p'TempPassword'
+  shell> /usr/local/mysql/bin/mysql -u root -p'TempPassword'
 
 And enter the password provided by the installer.
 
 Then, in the mysql interface (Please use the password below):
-  SET PASSWORD = PASSWORD('ATestingPassword');
-
-You can they quit out of mysql:
-  quit
+  mysql> SET PASSWORD = PASSWORD('ATestingPassword');
+  mysql> quit
 
 Now we can load the sample database and tables provided:
-    /usr/local/mysql/bin/mysql -u root -p'ATestingPassword' -r mysql.dump
+    shell> /usr/local/mysql/bin/mysql -u root -p'ATestingPassword' -r mysql.dump
 
 Note: There is a MySQL GUI for the Mac.  I recommend Sequel Pro.
   https://www.sequelpro.com/
@@ -95,7 +93,8 @@ Note: There is a MySQL GUI for the Mac.  I recommend Sequel Pro.
 When you open the sql database in Sequel Pro, make sure to select the
 "Socket" type of login and provide your root credentials.
 
-For our example, use the GUI to add a table called '
+For our example, you can use the gui to navigate to the 'PostTest' database;
+our requests will be stored in the ReceivedData table.
 
 
 
@@ -103,17 +102,17 @@ USAGE
 -----
 
 In a terminal window, make sure that the MySQL daemon is running:
-  sudo /usr/local/mysql/bin/mysql_safe --bind-address=127.0.0.1
+  shell> sudo /usr/local/mysql/bin/mysql_safe --bind-address=127.0.0.1
 
 (The bind-address part is to restrict access to the localhost.)
 
 In another termainl window, start the python virtual environment created above:
-  source venv/bin/activate
+  shell> source venv/bin/activate
 
 As a reminder `deactivate` will exit the virtual environment.
 
 Then start the web server:
-  python server.py
+  shell> python server.py
 
 From here, you can access the web page via a browser:
   http://localhost:5000/
@@ -129,4 +128,4 @@ password.  The data is located in the database "PostTest".
 To quit the server, type CTRL+C a few times in the terminal window to halt it.
 
 To shutdown the MySQL server use:
-  sudo /usr/local/mysql/bin/mysqladmin -u root -p'ATestingPassword' shutdown
+  shell> sudo /usr/local/mysql/bin/mysqladmin -u root -p'ATestingPassword' shutdown
