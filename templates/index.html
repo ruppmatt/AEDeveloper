@@ -4,7 +4,12 @@
 </head>
 
 <body>
-  <script src='//ajax.googleapis.com/ajax/libs/dojo/1.10.4/dojo/dojo.js' data-dojo-config=''></script>
+  <script src='//ajax.googleapis.com/ajax/libs/dojo/1.10.4/dojo/dojo.js' data-dojo-config="
+      async:true,
+      packages: [
+          {name:'ipsum', location:'/libs', main:'holder-ipsum'}
+        ]
+  "></script>
   <script src='libs/post.js'></script>
   <button type='button' id='send_button'>Send POST</button>
   <div id='status'>
