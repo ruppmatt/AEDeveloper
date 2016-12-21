@@ -7,8 +7,10 @@ sent to our Flask python server, which handles the request.  The data from the
 POST is stored in a local mysql server and a response is sent back.
 
 The following ports will be opened:
-  5000  python Flask server
-  3306  mysql server
+
+  + 5000  python Flask server
+
+  + 3306  mysql server
 
 
 SETUP
@@ -33,7 +35,7 @@ You should then be able to create and use the python virtual environment.  To
 do so you must first setup the venv folder, which will store our virtual
 environment libraries:
 
-  shell> virtualenv venv  #virtualenv is a program installed by pip; venv is where it is stored
+  shell> virtualenv venv  #venv is folder where the python virtual environment library is stored
 
 If you are having problems, you can manually specify the python executable:
 
@@ -41,7 +43,7 @@ If you are having problems, you can manually specify the python executable:
 
 To switch into the virtual environment:
 
-  shell> source env/bin/activate
+  shell> source venv/bin/activate
 
 This will use the python interpreter created by virtualenv along with the
 libraries we are about to install.
