@@ -33,8 +33,7 @@ You should then be able to create and use the python virtual environment.  To
 do so you must first setup the venv folder, which will store our virtual
 environment libraries:
 
-  shell> virtualenv env  #virtualenv is a program installed by pip; env is the folder
-                  #to Create
+  shell> virtualenv venv  #virtualenv is a program installed by pip; venv is where it is stored
 
 If you are having problems, you can manually specify the python executable:
 
@@ -101,6 +100,7 @@ Now we can load the sample database and tables provided:
     shell> /usr/local/mysql/bin/mysql -u root -p'ATestingPassword' -r mysql.dump
 
 Note: There is a MySQL GUI for the Mac.  I recommend Sequel Pro.
+
   https://www.sequelpro.com/
 
 When you open the sql database in Sequel Pro, make sure to select the
