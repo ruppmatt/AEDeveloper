@@ -96,10 +96,9 @@ def send_table():
                 results.append(json.dumps({'id':id, 'date':str(date), 'comment':comment}))
         finally:
             cursor.close()
-        return generate_response({'success':True,'results':results})
+        return generate_response({'success':True,'results':results}, 200)
     except Exception as e:
-        exc_type, exc_obj, exc_tb = sys.exc_info()
-        fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+        print(e)
         return generate_response({'success':False}, 400)
     finally:
         cnx.close()
