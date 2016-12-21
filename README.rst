@@ -181,14 +181,13 @@ is the name of the log request from {log, events, messages, error}.  For
 example, to get the full error log for the second bug report, the URI would
 be:
 
-  /log/2/log
-
+  http://localhost:5000/log/2/log
 
 
 SHUTDOWN
 ~~~~~~~~
 
-To quit the server, type CTRL+C a few times in the terminal window to halt it.
+To quit the web server, type CTRL+C a few times in its terminal window to halt it.
 
 To shutdown the MySQL server use:
 
