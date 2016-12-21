@@ -14,9 +14,14 @@ The following ports will be opened:
 
 The following webpages will be available at localhost:5000
 
-  + /  The index
-  + /logs  List all logs
-  + /log/id/logname  Where id and logname are the log primary key and logname
+  + /
+  + /logs
+  + /log/id/logname
+
+An explanation of each is provided in the USAGE section.
+
+NOTE: THIS IS A PROTOTYPE.  IT MUST BE HARDENED BEFORE DEPLOYMENT.
+
 
 
 SETUP
@@ -74,28 +79,31 @@ MYSQL
 ~~~~~
 
 Follow the instructions on dev.mysql.com:
+
   https://dev.mysql.com/doc/refman/5.7/en/osx-installation.html
 
 Use the 'download' section of the mysql website to download the actual DMG
-image.
+image.  Be sure to keep the temporary password it assigns you.  We'll change
+it shortly.
+
+On my machine, all mysql binaries are stored at:
+
+  /usr/local/mysql/bin
+
+These programs must be run as root because of how they were installed.  There are
+directions on the Oracle MySQL site to change this behavior.
 
 Once installed, start the mysql server on port 3306:
 
-  shell> sudo mysqld_safe --bind-address=127.0.0.1
+  shell> sudo /usr/local/mysql/bin/mysqld_safe --bind-address=127.0.0.1
 
-Now you have to change the temporary password provided by the installer.  On
-my machine (macOS), all of the executables are installed in:
-
-  shell> /usr/local/mysql/bin
-
-These files must be run as root because of how they were installed.  There are
-directions on the Oracle MySQL site to change this behavior.
+Now you have to change the temporary password provided by the installer.
 
 To change the password:
 
   shell> /usr/local/mysql/bin/mysql -u root -p'TempPassword'
 
-And enter the password provided by the installer.
+where TempPassword is what was provided by the installer.
 
 Then, in the mysql interface (Please use the password below):
 
@@ -107,12 +115,15 @@ Now we can load the sample database and tables provided:
 
     shell> /usr/local/mysql/bin/mysql -u root -p'ATestingPassword' -r mysql.dump
 
+This will setup the database to work with our prototype.
+
 Note: There is a MySQL GUI for the Mac.  I recommend Sequel Pro.
 
   https://www.sequelpro.com/
 
 When you open the sql database in Sequel Pro, make sure to select the
-"Socket" type of login and provide your root credentials.
+"Socket" type of login; set the name to localhost; and use "root" as your
+username and "ATestingPassword" as the password.
 
 For our example, you can use the gui to navigate to the 'PostTest' database;
 our requests will be stored in the ReceivedData table.
