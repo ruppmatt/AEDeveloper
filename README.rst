@@ -183,6 +183,8 @@ be:
 
   http://localhost:5000/log/2/log
 
+Do note that any non-valid ID will return a 404 error.
+
 
 SHUTDOWN
 ~~~~~~~~
