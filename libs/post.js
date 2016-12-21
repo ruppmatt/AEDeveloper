@@ -10,22 +10,35 @@ require(
 
     //foo
 
-    //Data to send
-    var a_log = ipsum.paragraphs(5,true).join('\n\n');
-    var a_comment = ipsum.paragraph();
+
 
     //Everything happens when we click a button
     on(dom.byId('send_button'), 'click', function(){
 
-      domConst.place('<p>Button pressed; send message</p>', 'status');
+      //Data to send
+      var a_log = ipsum.paragraphs(5,true).join('\n\n');
+      var a_comment = ipsum.paragraph();
+      var a_jserror = ipsum.sentence();
+      var a_email = 'foo@bar.baz';
+      var a_events = ipsum.paragraphs(5,true).join('\n\n');
+      var a_method = 'userTriggered';
+      var a_messages = ipsum.paragraphs(5,true).join('\n\n');
 
-      console.log(a_log);
+      domConst.place('<p>Button pressed; send message</p>', 'status');
 
       xhr.post(  //Post is a helper function to xhr, a more generic class
         'http://localhost:5000/receive',  //URL parameter
           {  //Data and halding parameter
             handleAs:'json',
-            data:{log:a_log, comment:a_comment}
+            data:{
+              log:a_log,
+              comment:a_comment,
+              error:a_jserror,
+              email:a_email,
+              events:a_events,
+              method:a_method,
+              messages:a_messages
+            }
           }
       ).then(function(received){ //Promise format; received data from request (first param of then)
           domConst.place('<p>Data received: <code>' + JSON.stringify(received) + '</code></p>', 'status');
