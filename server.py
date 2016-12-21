@@ -4,7 +4,7 @@ import mysql.connector
 from datetime import datetime
 from colorama import Fore, Back, Style
 import os, sys
-
+from collections import namedtuple
 
 app = Flask(__name__);  # Create flask application
 
@@ -81,19 +81,24 @@ def process_post():
 # entry in our database.  We're not going to send the entire log entry because
 # that will be quite large in practice.  Clicking the log ID will redirect
 # us to a page that contains the entire log
-@app.route('/tableview', methods=['GET'])
+@app.route('/logs', methods=['GET'])
 def send_table():
     global db_options #Expose our database options
     try:
         #Open the database and a cursor
         cnx = mysql.connector.connect(**db_options)
         cursor = cnx.cursor(buffered=True)
-        cmd = 'SELECT id, date, comment from ReceivedData'
+        fields = ['id', 'date', 'comment', 'email', 'method']
+        cmd = generate_get('ReceivedData', fields)
         try:
             cursor.execute(cmd)
             results = []
-            for (id, date, comment) in cursor:
-                results.append(json.dumps({'id':id, 'date':str(date), 'comment':comment}))
+            CursorFields = namedtuple("CursorFields", fields)
+            for cfields in map(CursorFields._make, cursor):
+                d_results = {}
+                for f in fields:
+                    d_results[f] = str(getattr(cfields,f))
+                results.append(d_results)
         finally:
             cursor.close()
         return generate_response({'success':True,'results':results}, 200)
@@ -102,6 +107,12 @@ def send_table():
         return generate_response({'success':False}, 400)
     finally:
         cnx.close()
+
+
+# Serve up our webpage template
+@app.route('/tableview')
+def table_view():
+    return render_template('tableview.html')
 
 
 # Combine a base dictionary, d, with an additional dictionary j
@@ -125,23 +136,33 @@ def combine_data(d, j):
 # INSERT INTO mydb (field1, field2) VALUES (%(field1)s, %(field2)s)
 # where field1 and field2 are keys to the dictionary provided by data
 # The values will get inserted later by cursor.execute(template_string, dict
-def generate_insertion(db, data):
+def generate_insertion(table, data):
     #We need to play around to get the MySQL statement correct
     #when we're dealing with a dictionary worth of data
     ncol = len(data)
     cols = ', '.join(data.keys())  #List of our columns in order
     val_placeholder = ', '.join(map(lambda x: '%('+x+')s ', data.keys())) #Create our placeholders]
     insert_cmd =\
-        "INSERT INTO {db} ({columns}) VALUES ({values})".format(
-        columns=cols, values=val_placeholder, db=db)
+        "INSERT INTO {table} ({columns}) VALUES ({values})".format(
+        columns=cols, values=val_placeholder, table=table)
     print(Fore.MAGENTA + insert_cmd + Style.RESET_ALL)
     return insert_cmd
+
+
+# A helper function to get particular fields in a table
+def generate_get(table, fields):
+    f = ', '.join(fields)
+    cmd = 'SELECT {fields} FROM {table}'.format(fields=f, table=table)
+    #print(Fore.MAGENTA + cmd + Style.RESET_ALL)
+    return cmd
 
 
 # A helper function to make the return line for responses a little easier
 # to look at
 def generate_response(json_dict, code, header_dict={'ContentType':'application/json'}):
-    return json.dumps(json_dict), code, header_dict
+    response = json.dumps(json_dict), code, header_dict
+    #print(Fore.CYAN + ', '.join(map(lambda x: str(x), response)) + Style.RESET_ALL)
+    return response
 
 # Run the Flask app
 if __name__ == '__main__':
