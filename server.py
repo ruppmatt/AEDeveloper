@@ -53,7 +53,6 @@ def process_post():
 
         #Get the data and substituion string ready
         #request.form is a dictionary containing values sent by the client
-        print(datetime.utcnow())
         to_store = combine_data({'date':datetime.utcnow()}, request.form)
 
         #I'm using a helper method to generate the insertion command
@@ -81,7 +80,7 @@ def process_post():
 # entry in our database.  We're not going to send the entire log entry because
 # that will be quite large in practice.  Clicking the log ID will redirect
 # us to a page that contains the entire log
-@app.route('/logs', methods=['GET'])
+@app.route('/getlogs', methods=['GET'])
 def send_table():
     global db_options #Expose our database options
     try:
@@ -109,10 +108,45 @@ def send_table():
         cnx.close()
 
 
+
+# This method will return the log given how the URL is setup.
+# In this case if we wanted the events log for entry 10:
+# http://foo.com/log/10/events
+# Either the log will be returned or a 404 error
+@app.route('/log/<string:id>/<string:logtype>')
+def get_log(id, logtype):
+    global db_options #Expose our database options
+    try:
+        #Open the database and a cursor
+        cnx = mysql.connector.connect(**db_options)
+        cursor = cnx.cursor(buffered=True)
+        cmd = generate_get('ReceivedData', [logtype], 'WHERE id=' + id)
+        try:
+            cursor.execute(cmd)
+            if not cursor.with_rows:
+                return '', 404
+            elif cursor.rowcount == 1:
+                retval = cursor.fetchone()[0]
+                return 'NULL' if retval is None else retval.replace('\n','<br/>'), 200, {'ContentType':'text/plain'}
+            else:
+                return '', 404
+        except Exception as e:
+            print(e)
+            return '', 404
+        finally:
+            cursor.close()
+    except Exception as e:
+        print(e)
+        return '', 404
+    finally:
+        cnx.close()
+
+
+
 # Serve up our webpage template
-@app.route('/tableview')
+@app.route('/logs')
 def table_view():
-    return render_template('tableview.html')
+    return render_template('logs.html')
 
 
 # Combine a base dictionary, d, with an additional dictionary j
@@ -145,14 +179,14 @@ def generate_insertion(table, data):
     insert_cmd =\
         "INSERT INTO {table} ({columns}) VALUES ({values})".format(
         columns=cols, values=val_placeholder, table=table)
-    print(Fore.MAGENTA + insert_cmd + Style.RESET_ALL)
+    #print(Fore.MAGENTA + insert_cmd + Style.RESET_ALL)
     return insert_cmd
 
 
 # A helper function to get particular fields in a table
-def generate_get(table, fields):
+def generate_get(table, fields, suffix=''):
     f = ', '.join(fields)
-    cmd = 'SELECT {fields} FROM {table}'.format(fields=f, table=table)
+    cmd = 'SELECT {fields} FROM {table} {suffix}'.format(fields=f, table=table, suffix=suffix)
     #print(Fore.MAGENTA + cmd + Style.RESET_ALL)
     return cmd
 

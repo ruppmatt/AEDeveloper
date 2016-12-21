@@ -12,6 +12,12 @@ The following ports will be opened:
 
   + 3306  mysql server
 
+The following webpages will be available at localhost:5000
+
+  + /  The index
+  + /logs  List all logs
+  + /log/id/logname  Where id and logname are the log primary key and logname
+
 
 SETUP
 -----
@@ -116,6 +122,9 @@ our requests will be stored in the ReceivedData table.
 USAGE
 -----
 
+START-UP
+~~~~~~~~
+
 In a terminal window, make sure that the MySQL daemon is running:
 
   shell> sudo /usr/local/mysql/bin/mysql_safe --bind-address=127.0.0.1
@@ -132,7 +141,11 @@ Then start the web server:
 
   shell> python server.py
 
-From here, you can access the web page via a browser:
+
+PAGES
+~~~~~
+
+From here, you can access the data-generation page at the URI:
 
   http://localhost:5000/
 
@@ -143,6 +156,26 @@ response will be sent back to the webpage.
 You can use Sequel Pro (above) to see the information stored in the database.
 Log in via a "Socket" connection to localhost with the root username and
 password.  The data is located in the database "PostTest".
+
+To see all logs currently in the server as a table view, navigate to:
+
+  http://localhost:5000/logs
+
+From there you can select any of the icons after the comment section to pull
+up individual logs in a separate page.  (Note the logs are formatted to be
+displayed in the browser, so the text actually contains <br/> in it.  This
+can be changed at a later time.  The URI for accessing the individual logs
+has this scheme /log/ID/NAME where ID is the id of the log report and NAME
+is the name of the log request from {log, events, messages, error}.  For
+example, to get the full error log for the second bug report, the URI would
+be:
+
+  /log/2/log
+
+
+
+SHUTDOWN
+~~~~~~~~
 
 To quit the server, type CTRL+C a few times in the terminal window to halt it.
 
