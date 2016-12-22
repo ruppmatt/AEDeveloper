@@ -8,6 +8,7 @@ from collections import namedtuple
 
 app = Flask(__name__);  # Create flask application
 
+# MySQL login credentials and options
 db_options = {
         'user':'root',
         'password':'ATestingPassword',
@@ -17,21 +18,22 @@ db_options = {
     }
 
 
-#Routes are how one maps URLs to what actions are taken
+# Routes are how one maps URLs to what actions are taken
+# We use decorators to map particular functions onto a route
 
-#This route just gives access to the javascript files in the libs directory
-#The return value is how the request was handled; in this case return
-#the file from libs
+# This route just gives access to the javascript files in the libs directory
+# The return value is how the request was handled; in this case return
+# the file from libs
 @app.route('/libs/<path:path>')
 def send_javascript(path):
     return send_from_directory('libs', path)
 
 
 
-#This route returns our index page if the localhost URL is requested.
-#Templates can contain fields that may be modified using Flask tools.
-#We don't have any in index.html, but I'm using the render_template
-#method anyway.
+# This route returns our index page if the localhost URL is requested.
+# Templates can contain fields that may be modified using Flask tools.
+# We don't have any in index.html, but I'm using the render_template
+# method anyway.
 @app.route('/')
 def show_root_page():
     return render_template('index.html')
@@ -165,11 +167,11 @@ def combine_data(d, j):
 # place holders are named in a Python-2 format-like manner.
 # The dictionary's values to substitute the place-holding parameters is passed
 # to the cursor.execute method as the second argument, where substitions
-#are actually made.  (This method generates just the template string.)
+# are actually made.  (This method generates just the template string.)
 # For example
 # INSERT INTO mydb (field1, field2) VALUES (%(field1)s, %(field2)s)
 # where field1 and field2 are keys to the dictionary provided by data
-# The values will get inserted later by cursor.execute(template_string, dict
+# The values will get inserted later by cursor.execute(template_string, dict)
 def generate_insertion(table, data):
     #We need to play around to get the MySQL statement correct
     #when we're dealing with a dictionary worth of data

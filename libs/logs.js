@@ -43,7 +43,7 @@ require(
     }
 
     //Try to be RESTful and use GET
-    xhr.get(  //Post is a helper function to xhr, a more generic class
+    xhr.get(  //get is a helper function to xhr, a more generic class
       'http://localhost:5000/getlogs',  //URL parameter
         {  //Data and halding parameter
         }

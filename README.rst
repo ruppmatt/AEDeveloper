@@ -101,7 +101,7 @@ Now you have to change the temporary password provided by the installer.
 
 To change the password:
 
-  shell> /usr/local/mysql/bin/mysql -u root -p'TempPassword'
+  shell> sudo /usr/local/mysql/bin/mysql -u root -p'TempPassword'
 
 where TempPassword is what was provided by the installer.
 
@@ -113,7 +113,7 @@ Then, in the mysql interface (Please use the password below):
 
 Now we can load the sample database and tables provided:
 
-    shell> /usr/local/mysql/bin/mysql -u root -p'ATestingPassword' -r mysql.dump
+    shell> sudo /usr/local/mysql/bin/mysql -u root -p'ATestingPassword' -r mysql.dump
 
 This will setup the database to work with our prototype.
 
