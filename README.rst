@@ -1,10 +1,11 @@
-README
-======
+PostTest
+========
 
-The purpose of these files is to demonstrate how data from a webpage can be
-set asynchronously using HTTP POST.  In this demonstration a JSON object is
-sent to our Flask python server, which handles the request.  The data from the
-POST is stored in a local mysql server and a response is sent back.
+The purpose of this project is to demonstrate how data from a webpage
+may be sent from the browser to a web server using a POST request.  The data
+will then be stored in a MySQL database, where it can then be retrieved through
+a GET request or specially crafted URIs.  Flask will be our webserver for this
+demonstration.
 
 The following ports will be opened:
 
