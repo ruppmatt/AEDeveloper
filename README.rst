@@ -63,7 +63,7 @@ libraries we are about to install.
 Once activated you'll see a (venv) above your prompt to indicate you are using
 the virtual environment described by the contents of venv.
 
-To quit the virtual environment, type:
+Later, to quit the virtual environment, type:
 
   deactivate
 
