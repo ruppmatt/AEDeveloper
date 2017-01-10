@@ -38,6 +38,9 @@ require(
               events:a_events,
               method:a_method,
               messages:a_messages
+            },
+            headers: {
+              'X-Requested-With':null
             }
           }
       ).then(function(received){ //Promise format; received data from request (first param of then)

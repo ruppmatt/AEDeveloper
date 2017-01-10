@@ -1,21 +1,16 @@
 from flask import Flask, render_template, send_from_directory, request
+from flask_cors import cross_origin
+#from flask_login import LoginManager, UserMixin, login_required
 import json
 import mysql.connector
 from datetime import datetime
 from colorama import Fore, Back, Style
 import os, sys
 from collections import namedtuple
+from dbutils import *
+from dbopts import db_options
 
 app = Flask(__name__);  # Create flask application
-
-# MySQL login credentials and options
-db_options = {
-        'user':'root',
-        'password':'ATestingPassword',
-        'database':'PostTest',
-        'host':'127.0.0.1',
-        'raise_on_warnings':True
-    }
 
 
 # Routes are how one maps URLs to what actions are taken
@@ -45,8 +40,11 @@ def show_root_page():
 # The return value is in the format
 # ResponseString, HTTP_CODE (int), HTTP_HEADERS (dict)
 # The helper function generate_response will handing creating that
+# Login is not required for this resource; it must be cross-origin
 @app.route('/receive', methods=['POST'])
+@cross_origin()
 def process_post():
+    print(Fore.BLUE + str(request.form) + Style.RESET_ALL)
     global db_options #Expose our options map
     try:
         #Open the database and a cursor
@@ -82,7 +80,10 @@ def process_post():
 # entry in our database.  We're not going to send the entire log entry because
 # that will be quite large in practice.  Clicking the log ID will redirect
 # us to a page that contains the entire log
+# Login is required for this resource.
+# It should not be cross-origin
 @app.route('/getlogs', methods=['GET'])
+#@login_required
 def send_table():
     global db_options #Expose our database options
     try:
@@ -115,7 +116,10 @@ def send_table():
 # In this case if we wanted the events log for entry 10:
 # http://foo.com/log/10/events
 # Either the log will be returned or a 404 error
+# Login is required for this resource_exists
+# It should not be cross-origin
 @app.route('/log/<string:id>/<string:logtype>')
+#@login_required
 def get_log(id, logtype):
     global db_options #Expose our database options
     try:
@@ -146,60 +150,15 @@ def get_log(id, logtype):
 
 
 # Serve up our webpage template
+# Login is required for this resource
 @app.route('/logs')
+#@login_required
 def table_view():
     return render_template('logs.html')
 
 
-# Combine a base dictionary, d, with an additional dictionary j
-# This function handles the case when information from outside of
-# a HTTP request needs to get merged with another dictionary
-def combine_data(d, j):
-    for k,v in j.items():
-        d[k]=v
-    return d
-
-
-# The MySQL connector needs the data in a particular format in order to insert
-# it into the database.  It is a two part process: first create a template
-# string that will be passed as the first parameter of cursor.execute.
-# The string contains placeholders for the actual data.  In our case, these
-# place holders are named in a Python-2 format-like manner.
-# The dictionary's values to substitute the place-holding parameters is passed
-# to the cursor.execute method as the second argument, where substitions
-# are actually made.  (This method generates just the template string.)
-# For example
-# INSERT INTO mydb (field1, field2) VALUES (%(field1)s, %(field2)s)
-# where field1 and field2 are keys to the dictionary provided by data
-# The values will get inserted later by cursor.execute(template_string, dict)
-def generate_insertion(table, data):
-    #We need to play around to get the MySQL statement correct
-    #when we're dealing with a dictionary worth of data
-    ncol = len(data)
-    cols = ', '.join(data.keys())  #List of our columns in order
-    val_placeholder = ', '.join(map(lambda x: '%('+x+')s ', data.keys())) #Create our placeholders]
-    insert_cmd =\
-        "INSERT INTO {table} ({columns}) VALUES ({values})".format(
-        columns=cols, values=val_placeholder, table=table)
-    #print(Fore.MAGENTA + insert_cmd + Style.RESET_ALL)
-    return insert_cmd
-
-
-# A helper function to get particular fields in a table
-def generate_get(table, fields, suffix=''):
-    f = ', '.join(fields)
-    cmd = 'SELECT {fields} FROM {table} {suffix}'.format(fields=f, table=table, suffix=suffix)
-    #print(Fore.MAGENTA + cmd + Style.RESET_ALL)
-    return cmd
-
-
-# A helper function to make the return line for responses a little easier
-# to look at
-def generate_response(json_dict, code, header_dict={'ContentType':'application/json'}):
-    response = json.dumps(json_dict), code, header_dict
-    #print(Fore.CYAN + ', '.join(map(lambda x: str(x), response)) + Style.RESET_ALL)
-    return response
 
 # Run the Flask app
 if __name__ == '__main__':
-    app.run(debug=True)
+    port = 5000 if not len(sys.argv) == 2 else int(sys.argv[1])
+    app.run('127.0.0.1', port=port)

@@ -46,6 +46,10 @@ require(
     xhr.get(  //get is a helper function to xhr, a more generic class
       'http://localhost:5000/getlogs',  //URL parameter
         {  //Data and halding parameter
+          handleAs:'json',
+          headers:{
+            'X-Requested-With':null
+          }
         }
     ).then(function(response){ //Promise format; received data from request (first param of then)
         jresponse = JSON.parse(response)
