@@ -34,6 +34,7 @@ def generate_insertion(table, data):
 
 
 # A helper function to get particular fields in a table
+# This will not properly sanitize, so use internally only!
 def generate_get(table, fields, suffix=''):
     f = ', '.join(fields)
     cmd = 'SELECT {fields} FROM {table} {suffix}'.format(fields=f, table=table, suffix=suffix)

@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    {% block head %}
+      <title>{% block title %}Untitled{% endblock %}</title>
+      {% block css%}
+      <link rel=stylesheet type=text/css href="static/debug.css">
+      {% endblock %}
+    {% endblock %}
+</head>
+<body>
+
+{% block page %}
+  {% block navbar %}
+    <div class='navbar'>
+        <div class="siteheading">Avida-ED Developer Utilities</div>
+        {% if current_user is defined %}
+        <div class='usernav'>{{ current_user.get_id()|e }} <a href="/logout">logout</a></div>
+        {% endif %}
+      </div>
+    {% endblock navbar %}
+
+{% block heading %}
+<h1 class='heading'>{% block heading-title %} {{ self.title()|e }} {% endblock heading-title%}</h1>
+{% endblock heading %}
+
+{% block footer %}
+{% endblock footer %}
+
+{% endblock page %}
+
+</body>
+</html>

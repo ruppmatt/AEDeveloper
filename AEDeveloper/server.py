@@ -1,6 +1,6 @@
-from flask import Flask, render_template, send_from_directory, request
-from flask_cors import cross_origin
-#from flask_login import LoginManager, UserMixin, login_required
+from flask import Flask, render_template, send_from_directory, request, redirect, abort, url_for
+from flask_cors import cross_origin, CORS
+from flask_login import LoginManager, UserMixin, login_required, login_user, logout_user, current_user
 import json
 import mysql.connector
 from datetime import datetime
@@ -9,8 +9,36 @@ import os, sys
 from collections import namedtuple
 from dbutils import *
 from dbopts import db_options
+from urllib.parse import urlparse, urljoin
+from aeuser import AEUser, create_user, validate_user
+from aeforms import *
 
+
+# Setup our app
 app = Flask(__name__);  # Create flask application
+app.secret_key = 'Atefyej/ucithAmHasshacivyass2Om5'
+app.config['TEMPLATES_AUTO_RELOAD'] = True  # Reload our templates as we go along
+
+
+# Cross-site support
+CORS(app, supports_credentials=True)
+
+
+# Create and initialize login manager
+login_manager = LoginManager()
+login_manager.init_app(app)
+login_manager.login_view = "login"
+
+
+@login_manager.user_loader
+def load_user(user_id):
+    return AEUser(user_id)
+
+
+# CSRF setup
+csrf = CSRFProtect()
+csrf.init_app(app)
+
 
 
 # Routes are how one maps URLs to what actions are taken
@@ -24,16 +52,25 @@ def send_javascript(path):
     return send_from_directory('libs', path)
 
 
+# Expose our CSS folder
+@app.route('/css/<path:path>')
+def send_css(path):
+    return send_from_directory('css', path)
+
 
 # This route returns our index page if the localhost URL is requested.
 # Templates can contain fields that may be modified using Flask tools.
 # We don't have any in index.html, but I'm using the render_template
 # method anyway.
 @app.route('/')
+@login_required
 def show_root_page():
-    return render_template('index.html')
+    return render_template('developer.html')
 
 
+@app.route('/test')
+def show_test():
+    return render_template('test.html')
 
 # This route will be the location that we'll use to handle our POST request,
 # put the data in the database, and send back a response
@@ -43,8 +80,8 @@ def show_root_page():
 # Login is not required for this resource; it must be cross-origin
 @app.route('/receive', methods=['POST'])
 @cross_origin()
+@csrf.exempt
 def process_post():
-    print(Fore.BLUE + str(request.form) + Style.RESET_ALL)
     global db_options #Expose our options map
     try:
         #Open the database and a cursor
@@ -66,11 +103,13 @@ def process_post():
             cursor.close()
 
         #Send a success response
-        return generate_response({'success':True}, 200)
+        print(Fore.BLUE + 'GOOD'+ Style.RESET_ALL)
+        return '', 200
     except Exception as e:
         print(e)
         #Note that something went wrong and send a fail response
-        return generate_response({'success':False}, 400)
+        print(Fore.BLUE + 'BAD'+ Style.RESET_ALL)
+        return '', 400
     finally:
         #Cleanup
         cnx.close()
@@ -83,33 +122,28 @@ def process_post():
 # Login is required for this resource.
 # It should not be cross-origin
 @app.route('/getlogs', methods=['GET'])
-#@login_required
-def send_table():
+@login_required
+
+@csrf.exempt
+def send_logs():
     global db_options #Expose our database options
     try:
-        #Open the database and a cursor
         cnx = mysql.connector.connect(**db_options)
         cursor = cnx.cursor(buffered=True)
         fields = ['id', 'date', 'comment', 'email', 'method']
         cmd = generate_get('ReceivedData', fields)
-        try:
-            cursor.execute(cmd)
-            results = []
-            CursorFields = namedtuple("CursorFields", fields)
-            for cfields in map(CursorFields._make, cursor):
-                d_results = {}
-                for f in fields:
-                    d_results[f] = str(getattr(cfields,f))
-                results.append(d_results)
-        finally:
-            cursor.close()
-        return generate_response({'success':True,'results':results}, 200)
+        cursor.execute(cmd)
+        CursorFields = namedtuple("CursorFields", fields)
+        results = []
+        for cfields in map(CursorFields._make, cursor):
+            d_results = {}
+            for f in fields:
+                d_results[f] = str(getattr(cfields,f))
+            results.append(d_results)
+        cursor.close()
+        return generate_response({'results':results}, 200)
     except Exception as e:
-        print(e)
-        return generate_response({'success':False}, 400)
-    finally:
-        cnx.close()
-
+        return str(e), 500
 
 
 # This method will return the log given how the URL is setup.
@@ -119,7 +153,8 @@ def send_table():
 # Login is required for this resource_exists
 # It should not be cross-origin
 @app.route('/log/<string:id>/<string:logtype>')
-#@login_required
+@login_required
+@csrf.exempt
 def get_log(id, logtype):
     global db_options #Expose our database options
     try:
@@ -152,13 +187,72 @@ def get_log(id, logtype):
 # Serve up our webpage template
 # Login is required for this resource
 @app.route('/logs')
-#@login_required
+@login_required
 def table_view():
-    return render_template('logs.html')
+    print(current_user)
+    return render_template('logs.html', user=current_user.get_id())
 
+
+# Default login page
+# Successful logins will be registered
+# Pages will redirect if available
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    form = AELoginForm()
+    if form.validate_on_submit():
+        if validate_user(form.username.data, form.password.data):
+            user = AEUser(form.username.data)
+            redirect_to = request.args.get('next')
+            if not user.is_authenticated:
+                return render_template('login.html', form=form, login_error='Not authenticated')
+            if not is_url_safe(redirect_to):
+                return abort(400)
+            login_user(user)
+            return redirect(redirect_to) if redirect_to is not None else redirect('/')
+        else:
+            return render_template('login.html', form=form, login_error='Invalid username/password.')
+    return render_template('login.html', form=form)
+
+
+
+# Logout user
+@app.route('/logout')
+@login_required
+def logout():
+    logout_user()
+    return redirect(url_for('login'))
+
+
+# User Management
+@app.route('/users')
+@login_required
+def show_users():
+    return render_template('users.html')
+
+@app.route('/newuser', methods=['GET', 'POST'])
+#@login_required
+def newuser():
+    form = AENewUserForm()
+    if request.method == 'POST':
+        if form.validate_on_submit():
+            try:
+                create_user(form.username.data, form.password1.data)
+                return 'User created.', 200
+            except Exception as e:
+                return render_template('newuser.html', form=form, error='Unable to add user. ' + str(e))
+        else:
+            return render_template('newuser.html', form=form, error='Unable to add user.')
+    return render_template('newuser.html', form=form)
+
+
+def is_url_safe(target):
+    ref_url = urlparse(request.host_url)
+    test_url = urlparse(urljoin(request.host_url, target))
+    return test_url.scheme in ('http', 'https') and \
+           ref_url.netloc == test_url.netloc
 
 
 # Run the Flask app
 if __name__ == '__main__':
     port = 5000 if not len(sys.argv) == 2 else int(sys.argv[1])
-    app.run('127.0.0.1', port=port)
+    app.run('127.0.0.1', port=port, debug=True)
