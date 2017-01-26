@@ -2,8 +2,8 @@ from flask_login import LoginManager, UserMixin
 from dbopts import db_options
 from dbutils import *
 import mysql.connector
-import bcrypt
 import pdb
+import bcrypt
 
 class AEUserException(Exception):
     pass

@@ -4,7 +4,7 @@
     {% block head %}
       <title>{% block title %}Untitled{% endblock %}</title>
       {% block css%}
-      <link rel=stylesheet type=text/css href="static/debug.css">
+      <link rel=stylesheet type=text/css href="static/developer.css">
       {% endblock %}
     {% endblock %}
 </head>
@@ -13,16 +13,20 @@
 {% block page %}
   {% block navbar %}
     <div class='navbar'>
-        <div class="siteheading">Avida-ED Developer Utilities</div>
-        {% if current_user is defined %}
-        <div class='usernav'>{{ current_user.get_id()|e }} <a href="/logout">logout</a></div>
+        <div class="siteheading"><a href="{{url_for('developer_root')}}">Avida-ED Developer Utilities</a></div>
+        {% if current_user is defined and current_user.get_id() != None %}
+        <div class='usernav'>
+          {{ current_user.get_id()|e }}
+          <a href="{{url_for('user_settings')}}">settings</a>
+          <a href="{{url_for('logout')}}">logout</a>
+        </div>
         {% endif %}
       </div>
     {% endblock navbar %}
 
-{% block heading %}
-<h1 class='heading'>{% block heading-title %} {{ self.title()|e }} {% endblock heading-title%}</h1>
-{% endblock heading %}
+{% block page_heading %}
+<h1 class='page_heading'>{% block heading_title %} {{ self.title()|e }} {% endblock heading_title %}</h1>
+{% endblock page_heading %}
 
 {% block footer %}
 {% endblock footer %}

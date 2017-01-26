@@ -1,0 +1,98 @@
+:root {
+  --main-bg-color:white;
+  --main-gray:#BFBFCE;
+  --main-red:#E03D2F;
+  --main-orange:#E97F02;
+  --main-yellow:#F8CA00;
+  --main-green:#2FBF3B;
+  --main-olive:#8A9B0F;
+  --main-dk-green:#3D4CBF;
+  --main-blue:#3D4CBF;
+  --main-lt-blue:#7ECAEA;
+  --main-purple:#AB7DE0;
+  --main-dk-purple:#490A3D;
+  --main-magenta:#F464C7;
+  --main-brown:#CC9028;
+}
+
+dt{
+  margin:5px;
+}
+dd{
+  margin:5px;
+}
+
+.login_button{
+  margin-top: 10px;
+}
+
+.login_input{
+  display:block;
+}
+
+.err{
+  color:red;
+}
+
+.userbar{
+  color:white;
+  text-align:right;
+}
+
+.navbar{
+  font-family:sans-serif;
+  padding:5px;
+  background-color:var(--main-gray);
+  display:flex;
+  flex-direction:row;
+  justify-content:space-between;
+  align-items:center;
+  color:black;
+}
+
+.siteheading{
+  width:50%;
+  font-size:large;
+  font-weight:bold;
+}
+
+.siteheading > a:link{
+  text-decoration:none;
+  color:black;
+}
+
+.siteheading > a:visited{
+  text-decoration:none;
+  color:black;
+}
+
+.siteheading > a:hover{
+  text-decoration:underline;
+}
+
+.usernav{
+  text-align:right;
+  width:50%;
+}
+
+.page_heading{
+  font-size:largest;
+}
+
+
+.management_div{
+  margin-bottom:100px;
+}
+
+.accesstable{
+  width:90%;
+  margin:20px;
+}
+
+.accesstable_header{
+  font-weight:bold;
+  background-color:var(--main-lt-blue);
+}
+
+.accesstable_header ~ th{
+}

@@ -64,7 +64,7 @@ def send_css(path):
 # method anyway.
 @app.route('/')
 @login_required
-def show_root_page():
+def developer_root():
     return render_template('developer.html')
 
 
@@ -224,10 +224,10 @@ def logout():
 
 
 # User Management
-@app.route('/users')
+@app.route('/manage')
 @login_required
-def show_users():
-    return render_template('users.html')
+def show_management():
+    return render_template('management.html')
 
 @app.route('/newuser', methods=['GET', 'POST'])
 #@login_required
@@ -244,6 +244,11 @@ def newuser():
             return render_template('newuser.html', form=form, error='Unable to add user.')
     return render_template('newuser.html', form=form)
 
+
+@app.route('/settings')
+@login_required
+def user_settings():
+    pass
 
 def is_url_safe(target):
     ref_url = urlparse(request.host_url)

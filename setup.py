@@ -14,5 +14,7 @@ setup(
         'mysql-connector',
         'flask-security',
         'flask-cors',
+        'colorama',
+        'bcrypt'
     ],
 )

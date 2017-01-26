@@ -1,8 +1,10 @@
 <!doctype html>
-<title>Login</title>
-<link rel=stylesheet type=text/css href="css/debug.css">
-<div class=page>
-  <h1>Login</h1>
+{% extends 'base.html' %}
+
+{% block title %}User Login{% endblock title%}
+
+{% block page %}
+  {{ super() }}
   <form method='POST'>
     {{ form.csrf_token }}
     <dl class='login_form'>
@@ -19,6 +21,4 @@
     <div class='err'> {{ login_error|e }} </div>
   {% endif %}
   </div>
-
-  {% block body %}{% endblock %}
-</div>
+{% endblock page %}
