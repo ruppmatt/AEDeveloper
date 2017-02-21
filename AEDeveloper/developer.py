@@ -4,14 +4,16 @@ from flask_login import LoginManager, UserMixin, login_required, login_user, log
 import json
 import mysql.connector
 from datetime import datetime
-from colorama import Fore, Back, Style
 import os, sys
 from collections import namedtuple
 from dbutils import *
-from dbopts import db_options
 from urllib.parse import urlparse, urljoin
-from aeuser import AEUser, create_user, validate_user
+from developer_identity import DeveloperIdentity, create_user, update_user, query_username
 from aeforms import *
+from db import init_db
+import traceback
+from colorama import Fore as F
+from colorama import Style as S
 
 
 # Setup our app
@@ -29,10 +31,17 @@ login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = "login"
 
-
+# This is the callback that flask login uses to retrieve a "user"
+# In this case a "user" is a token for either a username/password in
+# the database or a token token.
 @login_manager.user_loader
-def load_user(user_id):
-    return AEUser(user_id)
+def load_identity(user_id):
+    print(F.CYAN + str(user_id) + S.RESET_ALL)
+    identity = DeveloperIdentity(tokenhash=user_id)
+    retval = identity if identity.get_id() is not None else None
+    ret_id = retval.get_id() if retval is not None else 'Unauthorized'
+    print(F.YELLOW + ret_id + S.RESET_ALL)
+    return retval
 
 
 # CSRF setup
@@ -65,7 +74,7 @@ def send_css(path):
 @app.route('/')
 @login_required
 def developer_root():
-    return render_template('developer.html')
+    return render_template('developer.html', request=request)
 
 
 @app.route('/test')
@@ -82,37 +91,12 @@ def show_test():
 @cross_origin()
 @csrf.exempt
 def process_post():
-    global db_options #Expose our options map
     try:
-        #Open the database and a cursor
-        cnx = mysql.connector.connect(**db_options)
-        cursor = cnx.cursor()
-
-        #Get the data and substituion string ready
-        #request.form is a dictionary containing values sent by the client
-        to_store = combine_data({'date':datetime.utcnow()}, request.form)
-
-        #I'm using a helper method to generate the insertion command
-        insert_cmd = generate_insertion('ReceivedData', to_store)
-
-        #Execute the command and comit it
-        try:
-            cursor.execute(insert_cmd, to_store)
-            cnx.commit()
-        finally:
-            cursor.close()
-
-        #Send a success response
-        print(Fore.BLUE + 'GOOD'+ Style.RESET_ALL)
-        return '', 200
+        return 500
     except Exception as e:
         print(e)
-        #Note that something went wrong and send a fail response
-        print(Fore.BLUE + 'BAD'+ Style.RESET_ALL)
-        return '', 400
-    finally:
-        #Cleanup
-        cnx.close()
+        return 500
+
 
 
 # Try to be RESTful and return the URIs (based on IDs) and comments for each
@@ -189,8 +173,9 @@ def get_log(id, logtype):
 @app.route('/logs')
 @login_required
 def table_view():
-    print(current_user)
-    return render_template('logs.html', user=current_user.get_id())
+    this_page = 'logs.html'
+    return render_template(this_page, request=request, user=current_user)
+
 
 
 # Default login page
@@ -198,20 +183,21 @@ def table_view():
 # Pages will redirect if available
 @app.route('/login', methods=['GET', 'POST'])
 def login():
+    this_page = 'login.html'
     form = AELoginForm()
-    if form.validate_on_submit():
-        if validate_user(form.username.data, form.password.data):
-            user = AEUser(form.username.data)
-            redirect_to = request.args.get('next')
+    if request.method == 'POST':
+        if form.validate_on_submit():
+            user = DeveloperIdentity(username=form.username.data, password=form.password.data)
             if not user.is_authenticated:
-                return render_template('login.html', form=form, login_error='Not authenticated')
+                return render_template(this_page, form=form, login_error='Not authenticated')
+            redirect_to = request.args.get('next')
             if not is_url_safe(redirect_to):
                 return abort(400)
             login_user(user)
             return redirect(redirect_to) if redirect_to is not None else redirect('/')
         else:
-            return render_template('login.html', form=form, login_error='Invalid username/password.')
-    return render_template('login.html', form=form)
+            return render_template(this_page, form=form, login_error='Invalid username/password.')
+    return render_template(this_page, form=form)
 
 
 
@@ -223,32 +209,61 @@ def logout():
     return redirect(url_for('login'))
 
 
+
+# Change user settings
+@app.route('/settings', methods=['GET', 'POST'])
+@login_required
+def user_settings():
+    this_page = 'update_user.html'
+    form = AEChangeUserForm()
+    if request.method == 'POST':
+        if form.validate_on_submit():
+            try:
+                new_user = update_user(form, current_user)
+                redirect_to = request.args.get('next')
+                logout_user()
+                login_user(new_user)
+                if not is_url_safe(redirect_to):
+                    return 'User updated.', 200
+                print(F.GREEN + redirect_to + S.RESET_ALL)
+                return redirect(redirect_to) if redirect_to is not None else redirect('/')
+            except Exception as e:
+                return render_template(this_page, request=request, form=form, error='Unable to update user. ' + str(e))
+        else:
+            return render_template(this_page, request=request, form=form, error='Unable to update user. ')
+    if current_user.username is None:
+        return 'No user session.', 400
+    u = query_username(current_user.username)
+    form = AEChangeUserForm(obj=u, password1="", password2="", oldpassword="")
+    return render_template(this_page, request=request, form=form)
+
+
+
 # User Management
 @app.route('/manage')
 @login_required
 def show_management():
     return render_template('management.html')
 
+
+
 @app.route('/newuser', methods=['GET', 'POST'])
 #@login_required
 def newuser():
+    this_page = 'new_user.html'
     form = AENewUserForm()
     if request.method == 'POST':
         if form.validate_on_submit():
             try:
-                create_user(form.username.data, form.password1.data)
+                create_user(form)
                 return 'User created.', 200
             except Exception as e:
-                return render_template('newuser.html', form=form, error='Unable to add user. ' + str(e))
+                return render_template(this_page, request=request, form=form, error='Unable to add user.' + str(e))
         else:
-            return render_template('newuser.html', form=form, error='Unable to add user.')
-    return render_template('newuser.html', form=form)
+            return render_template(this_page, request=request, form=form, error='Unable to add user.')
+    return render_template(this_page, request=request, form=form)
 
 
-@app.route('/settings')
-@login_required
-def user_settings():
-    pass
 
 def is_url_safe(target):
     ref_url = urlparse(request.host_url)
@@ -259,5 +274,6 @@ def is_url_safe(target):
 
 # Run the Flask app
 if __name__ == '__main__':
+    init_db()
     port = 5000 if not len(sys.argv) == 2 else int(sys.argv[1])
     app.run('127.0.0.1', port=port, debug=True)

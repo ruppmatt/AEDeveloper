@@ -16,8 +16,10 @@
         <div class="siteheading"><a href="{{url_for('developer_root')}}">Avida-ED Developer Utilities</a></div>
         {% if current_user is defined and current_user.get_id() != None %}
         <div class='usernav'>
-          {{ current_user.get_id()|e }}
-          <a href="{{url_for('user_settings')}}">settings</a>
+          {{ current_user.username | e }}
+          {% if current_user.is_user() %}
+            <a href="{{url_for('user_settings') + '?next=' + request.url_rule | urlencode}}">settings</a>
+          {% endif %}
           <a href="{{url_for('logout')}}">logout</a>
         </div>
         {% endif %}
@@ -27,6 +29,9 @@
 {% block page_heading %}
 <h1 class='page_heading'>{% block heading_title %} {{ self.title()|e }} {% endblock heading_title %}</h1>
 {% endblock page_heading %}
+
+{% block body %}
+{% endblock body %}
 
 {% block footer %}
 {% endblock footer %}
