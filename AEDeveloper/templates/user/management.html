@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+
+{% block title %}Access Management{% endblock %}
+{% block head %}
+  {{ super() }}
+{% endblock %}
+
+
+{% block page %}
+{{ super() }}
+
+<div class="management_div">
+<h2>Users</h2>
+<table class="accesstable">
+  <tr class="accesstable_header">
+    <th>Username</th>
+    <th>Email</th>
+    <th>Full Name</th>
+    <th>Activated</th>
+    <th>Last Login</th>
+    <th>Privleges</th>
+    <th></th>
+  </tr>
+</table>
+</div>
+
+<div class="management_div">
+<h2>Access Tokens</h2>
+<table class="accesstable">
+  <tr class="accesstable_header">
+    <th>Token</th>
+    <th>Generator</th>
+    <th>Last Use</th>
+    <th>Activated</th>
+    <th>Privleges</th>
+    <th>Description</th>
+    <th></th>
+  </tr>
+</table>
+</div>
+
+<div class="management_div">
+<h2>Privleges</h2>
+<table class="accesstable">
+  <tr class="accesstable_header">
+    <th>Name</th>
+    <th>Description</th>
+  </tr>
+</th>
+
+{% endblock page %}

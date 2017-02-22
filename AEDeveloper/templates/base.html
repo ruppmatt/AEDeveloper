@@ -4,7 +4,7 @@
     {% block head %}
       <title>{% block title %}Untitled{% endblock %}</title>
       {% block css%}
-      <link rel=stylesheet type=text/css href="static/developer.css">
+      <link rel=stylesheet type=text/css href="/static/developer.css">
       {% endblock %}
     {% endblock %}
 </head>
@@ -18,9 +18,9 @@
         <div class='usernav'>
           {{ current_user.username | e }}
           {% if current_user.is_user() %}
-            <a href="{{url_for('user_settings') + '?next=' + request.url_rule | urlencode}}">settings</a>
+            <a href="{{url_for('user.user_settings') + '?next=' + request.url_rule | urlencode}}">settings</a>
           {% endif %}
-          <a href="{{url_for('logout')}}">logout</a>
+          <a href="{{url_for('user.logout')}}">logout</a>
         </div>
         {% endif %}
       </div>

@@ -3,13 +3,13 @@ from sqlalchemy_utils import database_exists, create_database
 from sqlalchemy import create_engine, Column, ForeignKey, MetaData
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.types import Integer, String, Boolean, DateTime, Enum, LargeBinary, Text
-from dbopts import dbopts
 import enum
-import field_sizes as size
+from .dbopts import dbopts
+from . import field_sizes as size
 
 
 
-engine = create_engine('mysql+mysqlconnector://root:ATestingPassword@localhost/test', echo=True)
+engine = create_engine('mysql+mysqlconnector://root:ATestingPassword@localhost/test')
 session = sessionmaker()
 session.configure(bind=engine)
 

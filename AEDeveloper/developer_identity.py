@@ -1,12 +1,12 @@
 from flask_login import UserMixin
 import bcrypt
-from db import session, User, Token
 from sqlalchemy.sql.expression import exists
 from colorama import Fore, Back, Style
 import hashlib
 from itertools import cycle
 import base64
 from enum import Enum
+from .db import session, User, Token
 
 class SessionType(Enum):
     NONE = 0
