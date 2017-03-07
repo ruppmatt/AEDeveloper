@@ -30,22 +30,15 @@ app.register_blueprint(report)
 
 
 
-
 # Routes are how one maps URLs to what actions are taken
 # We use decorators to map particular functions onto a route
 
-# This route just gives access to the javascript files in the libs directory
+# This route just gives access to the static files
 # The return value is how the request was handled; in this case return
 # the file from libs
-@app.route('/libs/<path:path>')
-def send_javascript(path):
+@app.route('/static/<path:path>')
+def send_static(path):
     return send_from_directory('libs', path)
-
-
-# Expose our CSS folder
-@app.route('/css/<path:path>')
-def send_css(path):
-    return send_from_directory('css', path)
 
 
 # This route returns our index page if the localhost URL is requested.

@@ -15,7 +15,7 @@ user = Blueprint('user', __name__, template_folder='../templates/user')
 
 # Create and initialize login manager
 login_manager = LoginManager()
-login_manager.login_view = "login"
+login_manager.login_view = "user.login"
 
 
 # Get our app setup with the login manager

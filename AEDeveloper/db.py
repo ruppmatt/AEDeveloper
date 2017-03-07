@@ -1,4 +1,4 @@
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import sessionmaker, relationship
 from sqlalchemy_utils import database_exists, create_database
 from sqlalchemy import create_engine, Column, ForeignKey, MetaData
 from sqlalchemy.ext.declarative import declarative_base
@@ -6,6 +6,7 @@ from sqlalchemy.types import Integer, String, Boolean, DateTime, Enum, LargeBina
 import enum
 from .dbopts import dbopts
 from . import field_sizes as size
+import datetime
 
 
 
@@ -68,6 +69,7 @@ class Token(Base):
         self.activated = kw['activated']
         self.deleted = kw['deleted']
 
+
 class Privilege(Base):
     __tablename__ = 'privilege'
     id = Column(Integer(), primary_key=True)
@@ -106,6 +108,29 @@ class Report(Base):
     date = Column(DateTime(), nullable=True)
     email = Column(String(size.email), nullable=True)
     trigger = Column(Enum('userTriggered','errorTriggered'), nullable=True)
+    logs = relationship('Log', back_populates='report')
+
+    def __init__(self, **kw):
+        self.ip = kw['ip'] if 'ip' in kw else None
+        self.userAgent = kw['userAgent'] if 'userAgent' in kw else None
+        self.userInfo = kw['userInfo'] if 'userInfo' in kw else None
+        self.flags = kw['flags'] if 'flags' in kw else None
+        self.date = kw['date'] if 'date' in kw else None
+        self.email = kw['email'] if 'email' in kw else None
+        self.trigger = kw['trigger'] if 'trigger' in kw else None
+
+    @classmethod
+    def from_post_request(cls, r):
+        d = {
+            'ip':r.remote_addr,
+            'userAgent':r.form['userAgent'] if 'userAgent' in r.form else None,
+            'userInfo':r.form['userInfo'] if 'userInfo' in r.form else None,
+            'flags':r.form['flags'] if 'flags' in r.form else None,
+            'date':datetime.datetime.utcnow(),
+            'email':r.form['email'] if 'email' in r.form else None,
+            'trigger':r.form['trigger'] if 'trigger' in r.form else None,
+        }
+        return cls(**d)
 
 
 class Log(Base):
@@ -114,6 +139,12 @@ class Log(Base):
     report_id = Column(Integer(), ForeignKey('report.id', onupdate='CASCADE', ondelete='CASCADE'))
     name = Column(String(size.log_name))
     data = Column(Text())
+    report = relationship('Report', back_populates='logs')
+
+    def __init__(self, **kw):
+        report_id = kw['report_id']
+        name = kw['name']
+        data = kw['data']
 
 
 def init_db():

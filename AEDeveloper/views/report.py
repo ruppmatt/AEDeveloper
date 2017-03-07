@@ -1,6 +1,8 @@
-from flask import Blueprint, render_template, send_from_directory, request, redirect, abort, url_for
-from werkzeug.local import LocalProxy
+from flask import Blueprint, render_template,request, redirect, abort, url_for
 from ..developer import csrf, login_required, cross_origin
+import pprint
+from .. import db
+
 
 report = Blueprint('report', __name__, template_folder='../templates/report')
 
@@ -16,12 +18,16 @@ report = Blueprint('report', __name__, template_folder='../templates/report')
 @cross_origin()
 @csrf.exempt
 def process_post():
-    try:
-        return 500
-    except Exception as e:
-        print(e)
-        return 500
-
+    s = db.session()
+    report = db.Report.from_post_request(request)
+    s.add(report)
+    s.add(db.Log(report_id=report.id, name='log', data=request.form['log']))
+    s.commit()
+    #for log in request.form['details']:
+    #    l = db.Log(report_id=report.id, name=log.key(), data=log.value())
+    #    s.commit()
+    s.commit()
+    return '', 400
 
 
 # Try to be RESTful and return the URIs (based on IDs) and comments for each
