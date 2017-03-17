@@ -7,6 +7,8 @@ import enum
 from .dbopts import dbopts
 from . import field_sizes as size
 import datetime
+import json
+from colorama import Fore, Style
 
 
 
@@ -104,31 +106,47 @@ class Report(Base):
     ip = Column(String(31,), nullable=True)
     userAgent = Column(String(size.user_agent), nullable=True)
     userInfo = Column(String(size.user_info), nullable=True)
-    flags = Column(String(size.flags), nullable=True)
+    vars = Column(String(size.vars), nullable=True)
     date = Column(DateTime(), nullable=True)
     email = Column(String(size.email), nullable=True)
-    trigger = Column(Enum('userTriggered','errorTriggered'), nullable=True)
+    triggered = Column(Enum('userTriggered','errorTriggered'), nullable=True)
+    comment = Column(String(size.comment), nullable=True)
     logs = relationship('Log', back_populates='report')
+    version = Column(String(size.version), nullable=True)
+    screenSize = Column(String(size.screen_size), nullable=True)
+    error = Column(String(size.error), nullable=True)
 
     def __init__(self, **kw):
         self.ip = kw['ip'] if 'ip' in kw else None
         self.userAgent = kw['userAgent'] if 'userAgent' in kw else None
         self.userInfo = kw['userInfo'] if 'userInfo' in kw else None
-        self.flags = kw['flags'] if 'flags' in kw else None
+        self.vars = kw['vars'] if 'vars' in kw else None
         self.date = kw['date'] if 'date' in kw else None
         self.email = kw['email'] if 'email' in kw else None
-        self.trigger = kw['trigger'] if 'trigger' in kw else None
+        self.triggered = kw['triggered'] if 'triggered' in kw else None
+        self.comment = kw['comment'] if 'comment' in kw else None
+        self.screenSize = kw['screenSize'] if 'screenSize' in kw else None
+        self.error = kw['error'] if 'error' in kw else None
+        self.version = kw['version'] if 'version' in kw else None
+
 
     @classmethod
     def from_post_request(cls, r):
+        f = r.get_json(force=True)
+        print(Fore.MAGENTA,  f.keys(), Style.RESET_ALL)
+        print(r.user_agent)
         d = {
             'ip':r.remote_addr,
-            'userAgent':r.form['userAgent'] if 'userAgent' in r.form else None,
-            'userInfo':r.form['userInfo'] if 'userInfo' in r.form else None,
-            'flags':r.form['flags'] if 'flags' in r.form else None,
+            'userAgent':str(r.user_agent),
+            'userInfo':f['userInfo'] if 'userInfo' in f else None,
+            'vars':json.dumps(f['vars']) if 'vars' in f else None,
             'date':datetime.datetime.utcnow(),
-            'email':r.form['email'] if 'email' in r.form else None,
-            'trigger':r.form['trigger'] if 'trigger' in r.form else None,
+            'email':f['email'] if 'email' in f else None,
+            'triggered':f['triggered'] if 'triggered' in f else None,
+            'comment':f['comment'] if 'comment' in f else None,
+            'error':f['error'] if 'error' in f else None,
+            'screenSize':f['screenSize'] if 'screenSize' in f else None,
+            'version':f['version'] if 'version' in f else None,
         }
         return cls(**d)
 
@@ -142,9 +160,9 @@ class Log(Base):
     report = relationship('Report', back_populates='logs')
 
     def __init__(self, **kw):
-        report_id = kw['report_id']
-        name = kw['name']
-        data = kw['data']
+        self.report_id = kw['report_id']
+        self.name = kw['name']
+        self.data = kw['data']
 
 
 def init_db():

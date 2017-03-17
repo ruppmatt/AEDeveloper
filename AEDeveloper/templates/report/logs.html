@@ -8,8 +8,73 @@
 {% block heading %}Logs{% endblock %}
 
 {% block body %}
-  <script src='//ajax.googleapis.com/ajax/libs/dojo/1.10.4/dojo/dojo.js' data-dojo-config="async:true"></script>
+  <script src='//ajax.googleapis.com/ajax/libs/dojo/1.10.4/dojo/dojo.js' data-dojo-config="
+      async:true,
+      packages: [
+          {name:'logs', location:'/libs', main:'logs'}
+        ]"></script>
   <script src='libs/logs.js'></script>
   {{ super() }}
   <table id='logtable'></table>
+
+
+  <script>
+    require([
+      'logs',
+      'dojo/dom',
+      'dojo/dom-construct',
+      'dojo/domReady!'
+    ], function(logs, dom, domConst){
+
+      /*
+      This function will generate our table from the GET request we received.
+      The fields are non-log elements retrieved
+      The files are fields that are used to generate the URLs to retrieve
+      particular log entries.
+      */
+      function generateTable(results){
+        console.log('here');
+        var fields = ['id','date','trigger','email', 'comments', 'userAgent', 'userInfo', 'logs']
+
+
+        //Generate the table header
+        var header = '<th>' + fields.concat(files).join('</th><th>') + '<th>'
+        domConst.place('<tr>' + header + '</tr>', 'logtable');
+
+        //Generate the individual rows from our returned results
+        if (typeof results !== 'undefined'){
+          for (r of results){
+            var row = '';
+            for (f of fields){
+              r_f = r[f]
+              console.log(typeof(r_f) == 'undefined')
+              if (typeof(r_f) === 'undefined'){
+                r_f = ''
+              }
+              row = row + '<td>' + r_f + '</td>'
+            }
+
+            row = row + '<td>';
+            if (typeof results['logs'] !== 'undefined'){
+              for (log_name of results['logs']){
+                row = row + log_name + '<br>';
+              }
+            }
+            row = row + '</td>';
+
+            domConst.place('<tr>' + row + '</tr>', 'logtable')
+          }
+        }
+      }
+
+      logs.all_reports_metadata(
+        function(response){
+          console.log(response);
+          generateTable(response.results);
+        },
+        function(err){
+          domConst.place('<p>Error: <code>' + JSON.stringify(err.response) + '</code></p>', 'status');
+        });
+    });
+  </script>
 {% endblock %}

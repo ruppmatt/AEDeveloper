@@ -2,7 +2,10 @@ from flask import Blueprint, render_template,request, redirect, abort, url_for
 from ..developer import csrf, login_required, cross_origin
 import pprint
 from .. import db
-
+from sqlalchemy import asc, desc
+import json
+from colorama import Fore, Style
+import urllib
 
 report = Blueprint('report', __name__, template_folder='../templates/report')
 
@@ -18,16 +21,25 @@ report = Blueprint('report', __name__, template_folder='../templates/report')
 @cross_origin()
 @csrf.exempt
 def process_post():
-    s = db.session()
-    report = db.Report.from_post_request(request)
-    s.add(report)
-    s.add(db.Log(report_id=report.id, name='log', data=request.form['log']))
-    s.commit()
-    #for log in request.form['details']:
-    #    l = db.Log(report_id=report.id, name=log.key(), data=log.value())
-    #    s.commit()
-    s.commit()
-    return '', 400
+    try:
+        s = db.session()
+        report = db.Report.from_post_request(request)
+        print(Fore.YELLOW, 'Here1', Style.RESET_ALL)
+        s.add(report)
+        print(Fore.YELLOW, 'Here2', Style.RESET_ALL)
+        s.commit()
+        print(Fore.YELLOW, 'Here3', Style.RESET_ALL)
+        logs = request.get_json(force=True)['logs']
+        for name,data in logs.items():
+            print(Fore.BLUE, name, data, Style.RESET_ALL)
+            l = db.Log(report_id=report.id, name=name, data=data)
+            s.add(l)
+        s.commit()
+        print(Fore.YELLOW, 'Here', Style.RESET_ALL)
+        return 'OK', 200
+    except Exception as e:
+        print(Fore.RED, str(e), Style.RESET_ALL)
+        return str(e), 403
 
 
 # Try to be RESTful and return the URIs (based on IDs) and comments for each
@@ -38,25 +50,28 @@ def process_post():
 # It should not be cross-origin
 @report.route('/report/all', methods=['GET'])
 @login_required
-def send_logs():
-    global db_options #Expose our database options
-    try:
-        cnx = mysql.connector.connect(**db_options)
-        cursor = cnx.cursor(buffered=True)
-        fields = ['id', 'date', 'comment', 'email', 'method']
-        cmd = generate_get('ReceivedData', fields)
-        cursor.execute(cmd)
-        CursorFields = namedtuple("CursorFields", fields)
-        results = []
-        for cfields in map(CursorFields._make, cursor):
-            d_results = {}
-            for f in fields:
-                d_results[f] = str(getattr(cfields,f))
-            results.append(d_results)
-        cursor.close()
-        return generate_response({'results':results}, 200)
-    except Exception as e:
-        return str(e), 500
+def send_log_metadata():
+    s = db.session()
+    rquery = s.query(db.Report,db.Log).order_by(desc(db.Report.date))
+    fields = ['id', 'date', 'triggered', 'email', 'comment', 'version', 'userAgent', 'userInfo', 'vars', 'screenSize', 'error']
+    arr = []
+    print(rquery.count())
+    for report in rquery.all():
+        d = {}
+
+        for f in fields:
+            if f != 'date':
+                d[f] = report.Report.__getattribute__(f)
+            else:
+                d[f] = report.Report.date.isoformat()
+        l = []
+        print(Fore.MAGENTA, len(report.Report.logs), Style.RESET_ALL)
+        for log in report.Report.logs:
+            l.append(log.name)
+        print(l)
+        d['logs'] = l
+        arr.append(d)
+    return json.dumps(arr), 200
 
 
 # This method will return the log given how the URL is setup.
@@ -67,34 +82,14 @@ def send_logs():
 # It should not be cross-origin
 @report.route('/report/<string:id>/<string:log>/<string:mode>')
 @login_required
-@csrf.exempt
-def get_log(id, logtype):
-    global db_options #Expose our database options
+def get_log(id, logtype, mode):
+    s = db.session()
+    lquery = s.query(Log).filter(db.Log.report_id==id, db.Log.name==name)
     try:
-        #Open the database and a cursor
-        cnx = mysql.connector.connect(**db_options)
-        cursor = cnx.cursor(buffered=True)
-        cmd = generate_get('ReceivedData', [logtype], 'WHERE id=' + id)
-        try:
-            cursor.execute(cmd)
-            if not cursor.with_rows:
-                return '', 404
-            elif cursor.rowcount == 1:
-                retval = cursor.fetchone()[0]
-                return 'NULL' if retval is None else retval.replace('\n','<br/>'), 200, {'ContentType':'text/plain'}
-            else:
-                return '', 404
-        except Exception as e:
-            print(e)
-            return '', 404
-        finally:
-            cursor.close()
+        log = lquery.one()
+        return log['data'], 290
     except Exception as e:
-        print(e)
         return '', 404
-    finally:
-        cnx.close()
-
 
 
 # Serve up our webpage template
