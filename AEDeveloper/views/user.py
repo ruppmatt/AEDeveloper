@@ -32,7 +32,7 @@ def load_identity(user_id):
     print(F.CYAN + str(user_id) + S.RESET_ALL)
     identity = DeveloperIdentity(tokenhash=user_id)
     retval = identity if identity.get_id() is not None else None
-    ret_id = retval.get_id() if retval is not None else 'Unauthorized'
+    ret_id = retval.get_id() if type(retval) != type(None) else 'Unauthorized'
     print(F.YELLOW + ret_id + S.RESET_ALL)
     return retval
 

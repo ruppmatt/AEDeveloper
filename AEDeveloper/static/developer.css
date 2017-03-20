@@ -96,3 +96,60 @@ dd{
 
 .accesstable_header ~ th{
 }
+
+/*
+Reports
+*/
+
+.report_table{
+  display:flex;
+  flex:1;
+}
+
+.report{
+  display:flex;
+  flex-direction:column;
+  flex:1;
+  border-top:solid;
+  overflow:hidden;
+  margin-bottom:50px;
+}
+
+.report .report_header{
+  display:flex;
+  flex-direction:row;
+  padding:5px;
+  border-bottom:solid;
+  font-weight:bold;
+}
+
+.report .report_header .report_id{
+  margin-right:5em;
+}
+
+.report .report_header .report_date{
+  margin-right:5em;
+}
+
+.report .report_header .report_triggered{
+  margin-right:5em;
+}
+
+.report .report_header .report_email{
+  flex:1;
+  text-align:right;
+}
+
+.report .report_header .report_triggered{
+  text-align:right;
+}
+
+.report .report_metadata_fieldname{
+  font-weight:bold;
+  padding-right:3em;
+}
+
+.report_log_name{
+  font-style:italic;
+  padding-right:2em;
+}

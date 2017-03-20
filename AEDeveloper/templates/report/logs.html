@@ -1,30 +1,79 @@
-{% extends '../base.html' %}
+{% extends 'base.html' %}
 
-{% block title %} Logs {% endblock %}
+{% block title %} Reports {% endblock %}
 {% block head %}
   {{ super() }}
+  <link rel=stylesheet type=text/css href="/static/jquery.jsonview.css">
 {% endblock %}
 
-{% block heading %}Logs{% endblock %}
+{% block heading %}Reports{% endblock %}
 
 {% block body %}
   <script src='//ajax.googleapis.com/ajax/libs/dojo/1.10.4/dojo/dojo.js' data-dojo-config="
       async:true,
       packages: [
-          {name:'logs', location:'/libs', main:'logs'}
-        ]"></script>
-  <script src='libs/logs.js'></script>
+          {name:'logs', location:'/static', main:'logs'},
+          {name:'jquery', location:'/static', main:'jquery-3.1.1.min'}
+        ]">
+  </script>
+
   {{ super() }}
-  <table id='logtable'></table>
+  <div id='report_table'></div>
 
 
   <script>
     require([
+      'jquery',
       'logs',
       'dojo/dom',
       'dojo/dom-construct',
+      'dojo/html',
       'dojo/domReady!'
-    ], function(logs, dom, domConst){
+    ], function(jQuery, logs, dom, domConst, html){
+
+      //Get jquery and json view (which depends on it) seutp
+      var $ = jQuery;
+      $.getScript('/static/jquery.jsonview.js');
+
+
+      function generateReportElement(report){
+        var report_div = domConst.create('div', {class:'report'});
+        var report_header = domConst.create('div', {class:'report_header'}, report_div);
+        var report_body = domConst.create('div', {class:'report_body'}, report_div);
+
+        domConst.create('div', {class:'report_id', textContent:report.id}, report_header);
+        domConst.create('div', {class:'report_date', textContent:report.date}, report_header);
+        domConst.create('div', {class:'report_triggered', textContent:report.triggered}, report_header);
+        domConst.create('div', {class:'report_email', textContent:report.email}, report_header);
+
+        var report_metadata = domConst.create('table', {class:'report_metadta_table'}, report_body);
+
+        ['id', 'date', 'triggered', 'email', 'comment', 'version',  'userInfo', 'vars', 'screenSize', 'error']
+        for (f of ['comment', 'version', 'userAgent', 'userInfo', 'vars', 'screenSize', 'error']){
+          var r = domConst.create('tr', {}, report_metadata);
+          domConst.create('td', {class:'report_metadata_fieldname', textContent:f}, r);
+          if (f !== 'vars'){
+            domConst.create('td', {textContent:report[f]},r);
+          } else {
+            var d = domConst.create('td', {}, r);
+            $(d).JSONView(report['vars'], {collapsed:true, recursiveCollapser:true, nl2br:true});
+          }
+          domConst.place(r,report_metadata);
+        }
+        var r = domConst.create('tr', {}, report_metadata);
+        domConst.create('td', {class:'report_metadata_fieldname', textContent:'logs'}, r)
+        var log_cell = domConst.create('td', {}, r);
+        var log_table = domConst.create('table', {class:'report_log_table'}, log_cell);
+        for (l of report['logs']){
+          var log_entry = domConst.create('tr', {class:'report_log_table_entry'}, log_table);
+          domConst.create('td', {class:'report_log_name', textContent:l}, log_entry);
+          for (mode of ['raw', 'html']){
+            domConst.create('td', {class:'report_log_mode', textContent:mode}, log_entry);
+          }
+        }
+        return report_div
+      }
+
 
       /*
       This function will generate our table from the GET request we received.
@@ -33,44 +82,19 @@
       particular log entries.
       */
       function generateTable(results){
-        console.log('here');
-        var fields = ['id','date','trigger','email', 'comments', 'userAgent', 'userInfo', 'logs']
-
-
-        //Generate the table header
-        var header = '<th>' + fields.concat(files).join('</th><th>') + '<th>'
-        domConst.place('<tr>' + header + '</tr>', 'logtable');
-
         //Generate the individual rows from our returned results
         if (typeof results !== 'undefined'){
-          for (r of results){
-            var row = '';
-            for (f of fields){
-              r_f = r[f]
-              console.log(typeof(r_f) == 'undefined')
-              if (typeof(r_f) === 'undefined'){
-                r_f = ''
-              }
-              row = row + '<td>' + r_f + '</td>'
-            }
-
-            row = row + '<td>';
-            if (typeof results['logs'] !== 'undefined'){
-              for (log_name of results['logs']){
-                row = row + log_name + '<br>';
-              }
-            }
-            row = row + '</td>';
-
-            domConst.place('<tr>' + row + '</tr>', 'logtable')
+          for (report of results){
+            var r = generateReportElement(report);
+            domConst.place(r, 'report_table');
           }
         }
       }
 
-      logs.all_reports_metadata(
+
+      logs.get_report_metadata(
         function(response){
-          console.log(response);
-          generateTable(response.results);
+          generateTable(response);
         },
         function(err){
           domConst.place('<p>Error: <code>' + JSON.stringify(err.response) + '</code></p>', 'status');

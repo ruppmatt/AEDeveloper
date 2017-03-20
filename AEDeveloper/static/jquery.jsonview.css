@@ -1,0 +1,130 @@
+@charset "UTF-8";
+.jsonview {
+    font-family: monospace;
+    font-size: 1.1em;
+    white-space: pre-wrap;
+    color: black
+}
+
+.jsonview .prop {
+    font-weight: normal;
+    text-decoration: none;
+    color: #000;
+}
+
+.jsonview .prop::after{
+  content:":";
+}
+
+.jsonview .null {
+    color: red;
+}
+
+.jsonview .undefined {
+    color: red;
+}
+
+.jsonview .bool {
+    color: blue;
+}
+
+.jsonview .num {
+    color: blue;
+}
+
+.jsonview .string {
+    color: orange;
+    white-space: pre-wrap;
+}
+
+.jsonview .string.multiline {
+    display: inline-block;
+    vertical-align: text-top;
+}
+
+.jsonview .collapser {
+    position: absolute;
+    cursor: pointer;
+    left: -1em;
+    min-width: 1em;
+}
+
+
+.jsonview .collapsible {
+}
+
+.jsonview .collapsible.collapsed {
+    height: .8em;
+    width: 1em;
+    display: inline-block;
+    overflow: hidden;
+    margin: 0;
+}
+
+.jsonview .collapsible.collapsed:before {
+    content: "…";
+    width: 1em;
+    margin-left: .2em;
+}
+
+.jsonview .collapser.collapsed {
+    transform: rotate(0deg);
+}
+
+.jsonview .q {
+    display: inline-block;
+    width: 0px;
+    color: transparent;
+}
+
+.jsonview li {
+    position: relative;
+}
+
+.jsonview ul {
+    list-style: none;
+    margin: 0 0 0 2em;
+    padding: 0;
+}
+
+.jsonview h1 {
+    font-size: 1.2em;
+}
+
+.jsonview ul[class^='array'] {
+    counter-reset: item -1;
+}
+
+.jsonview ul[class^='array']>li:before {
+    color: pink;
+    content: "[" counter(item, decimal) "] ";
+    counter-increment: item;
+    margin-left: 1em;
+    position:static;
+    float:left;
+}
+
+
+.jsonview ul[class^='array']:before {
+    content: "[";
+}
+
+.jsonview ul[class^='array']:after {
+    content: "]";
+}
+
+.jsonview ul[class^='obj']:before {
+    content:"{";
+}
+
+.jsonview ul[class^='obj']>li {
+    margin-left: 1em;
+}
+
+.jsonview ul[class^='obj']:after {
+    content: "}";
+}
+
+.jsonview
+
+/*# sourceMappingURL=jquery.jsonview.css.map */

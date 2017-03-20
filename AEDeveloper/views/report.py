@@ -48,11 +48,11 @@ def process_post():
 # us to a page that contains the entire log
 # Login is required for this resource.
 # It should not be cross-origin
-@report.route('/report/all', methods=['GET'])
+@report.route('/report/metadata', methods=['GET'])
 @login_required
 def send_log_metadata():
     s = db.session()
-    rquery = s.query(db.Report,db.Log).order_by(desc(db.Report.date))
+    rquery = s.query(db.Report).order_by(desc(db.Report.date))
     fields = ['id', 'date', 'triggered', 'email', 'comment', 'version', 'userAgent', 'userInfo', 'vars', 'screenSize', 'error']
     arr = []
     print(rquery.count())
@@ -61,12 +61,12 @@ def send_log_metadata():
 
         for f in fields:
             if f != 'date':
-                d[f] = report.Report.__getattribute__(f)
+                d[f] = report.__getattribute__(f)
             else:
-                d[f] = report.Report.date.isoformat()
+                d[f] = report.date.isoformat()
         l = []
-        print(Fore.MAGENTA, len(report.Report.logs), Style.RESET_ALL)
-        for log in report.Report.logs:
+
+        for log in report.logs:
             l.append(log.name)
         print(l)
         d['logs'] = l
@@ -87,7 +87,7 @@ def get_log(id, logtype, mode):
     lquery = s.query(Log).filter(db.Log.report_id==id, db.Log.name==name)
     try:
         log = lquery.one()
-        return log['data'], 290
+        return log['data'], 200
     except Exception as e:
         return '', 404
 
@@ -98,4 +98,4 @@ def get_log(id, logtype, mode):
 @login_required
 def table_view():
     this_page = 'logs.html'
-    return render_template(this_page, request=request, user=current_user)
+    return render_template(this_page)
