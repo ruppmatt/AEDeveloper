@@ -12,7 +12,7 @@ from colorama import Fore, Style
 
 
 
-engine = create_engine('mysql+mysqlconnector://root:ATestingPassword@localhost/test')
+engine = create_engine('mysql+mysqlconnector://root:ATestingPassword@localhost/test', echo=True)
 session = sessionmaker()
 session.configure(bind=engine)
 

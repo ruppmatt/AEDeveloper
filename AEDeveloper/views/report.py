@@ -24,21 +24,14 @@ def process_post():
     try:
         s = db.session()
         report = db.Report.from_post_request(request)
-        print(Fore.YELLOW, 'Here1', Style.RESET_ALL)
         s.add(report)
-        print(Fore.YELLOW, 'Here2', Style.RESET_ALL)
         s.commit()
-        print(Fore.YELLOW, 'Here3', Style.RESET_ALL)
         logs = request.get_json(force=True)['logs']
         for name,data in logs.items():
-            print(Fore.BLUE, name, data, Style.RESET_ALL)
             l = db.Log(report_id=report.id, name=name, data=data)
             s.add(l)
-        s.commit()
-        print(Fore.YELLOW, 'Here', Style.RESET_ALL)
-        return 'OK', 200
+        return '', 200
     except Exception as e:
-        print(Fore.RED, str(e), Style.RESET_ALL)
         return str(e), 403
 
 
@@ -48,30 +41,46 @@ def process_post():
 # us to a page that contains the entire log
 # Login is required for this resource.
 # It should not be cross-origin
-@report.route('/report/metadata', methods=['GET'])
+@report.route('/report/all', methods=['GET'])
 @login_required
-def send_log_metadata():
+def send_all_report_metadata():
     s = db.session()
     rquery = s.query(db.Report).order_by(desc(db.Report.date))
-    fields = ['id', 'date', 'triggered', 'email', 'comment', 'version', 'userAgent', 'userInfo', 'vars', 'screenSize', 'error']
     arr = []
-    print(rquery.count())
     for report in rquery.all():
-        d = {}
-
-        for f in fields:
-            if f != 'date':
-                d[f] = report.__getattribute__(f)
-            else:
-                d[f] = report.date.isoformat()
-        l = []
-
-        for log in report.logs:
-            l.append(log.name)
-        print(l)
-        d['logs'] = l
-        arr.append(d)
+        arr.append(generate_report_metadata_dict(report))
     return json.dumps(arr), 200
+
+
+@report.route('/report/<int:id>')
+@login_required
+def send_report_metadata(id):
+    try:
+        s = db.session()
+        rquery = s.query(db.Report).filter(db.Report.id == id)
+        if rquery.count() == 1:
+            return json.dumps(generate_report_metadata_dict(rquery.one()))
+        else:
+            raise IndexError
+    except Exception as e:
+        return str(e), 404
+
+
+
+def generate_report_metadata_dict(report):
+    d = {}
+    fields = ['id', 'date', 'triggered', 'email', 'comment', 'version', 'userAgent', 'userInfo', 'vars', 'screenSize', 'error']
+    for f in fields:
+        if f != 'date':
+            d[f] = report.__getattribute__(f)
+        else:
+            d[f] = report.date.isoformat()
+    l = []
+
+    for log in report.logs:
+        l.append(log.name)
+    d['logs'] = l
+    return d
 
 
 # This method will return the log given how the URL is setup.
@@ -80,22 +89,30 @@ def send_log_metadata():
 # Either the log will be returned or a 404 error
 # Login is required for this resource_exists
 # It should not be cross-origin
-@report.route('/report/<string:id>/<string:log>/<string:mode>')
+@report.route('/report/<int:id>/<string:log>/<string:mode>')
 @login_required
-def get_log(id, logtype, mode):
+def get_log(id, log, mode):
+    session_parsing = {'ui-avida':'--uiA', 'avida-ui':'--Aui', 'ui-debug':'--uiD', 'avida-debug':'--avD', 'user-actions':'--usr'}
     s = db.session()
-    lquery = s.query(Log).filter(db.Log.report_id==id, db.Log.name==name)
+    parse_session_log = True if log in session_parsing.keys() else False
+    log_name = log if not parse_session_log else 'session'
+    lquery = s.query(db.Log).filter(db.Log.report_id==id, db.Log.name==log_name)
     try:
-        log = lquery.one()
-        return log['data'], 200
+        log_entry = lquery.one()
+        if mode == 'raw':
+            log_data = log_entry.data if not parse_session_log else parse_session_data(session_parsing[log], log_entry.data)
+            return log_data, 200
+        elif mode == 'html':
+            return render_template('log_html.html', report_id=id, log_name=log);
+        else:
+            return '', 404
     except Exception as e:
-        return '', 404
+        return str(e), 500
 
 
 # Serve up our webpage template
 # Login is required for this resource
 @report.route('/report')
 @login_required
-def table_view():
-    this_page = 'logs.html'
-    return render_template(this_page)
+def report_table_view():
+    return render_template('reports.html')

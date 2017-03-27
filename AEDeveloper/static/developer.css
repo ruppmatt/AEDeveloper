@@ -1,3 +1,4 @@
+
 :root {
   --main-bg-color:white;
   --main-gray:#BFBFCE;
@@ -50,27 +51,27 @@ dd{
   color:black;
 }
 
-.siteheading{
+.navbar .heading{
   width:50%;
   font-size:large;
   font-weight:bold;
 }
 
-.siteheading > a:link{
+.navbar .heading > a:link{
   text-decoration:none;
   color:black;
 }
 
-.siteheading > a:visited{
+.navbar .heading > a:visited{
   text-decoration:none;
   color:black;
 }
 
-.siteheading > a:hover{
+.navbar .heading > a:hover{
   text-decoration:underline;
 }
 
-.usernav{
+.navbar .heading .usernav{
   text-align:right;
   width:50%;
 }
@@ -89,12 +90,12 @@ dd{
   margin:20px;
 }
 
-.accesstable_header{
+.accesstable .header{
   font-weight:bold;
   background-color:var(--main-lt-blue);
 }
 
-.accesstable_header ~ th{
+.accesstable .header ~ th{
 }
 
 /*
@@ -115,7 +116,7 @@ Reports
   margin-bottom:50px;
 }
 
-.report .report_header{
+.report .header{
   display:flex;
   flex-direction:row;
   padding:5px;
@@ -123,33 +124,22 @@ Reports
   font-weight:bold;
 }
 
-.report .report_header .report_id{
+.report .header div{
   margin-right:5em;
 }
 
-.report .report_header .report_date{
-  margin-right:5em;
-}
-
-.report .report_header .report_triggered{
-  margin-right:5em;
-}
-
-.report .report_header .report_email{
+.report .header .email{
   flex:1;
   text-align:right;
 }
 
-.report .report_header .report_triggered{
-  text-align:right;
-}
 
-.report .report_metadata_fieldname{
+.report .metadata .fieldname{
   font-weight:bold;
   padding-right:3em;
 }
 
-.report_log_name{
+.report .metadata .logname{
   font-style:italic;
   padding-right:2em;
 }

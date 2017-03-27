@@ -1,4 +1,4 @@
-from flask import Flask, render_template, send_from_directory, request
+from flask import Flask, send_from_directory, request, url_for, redirect
 from flask_cors import cross_origin, CORS
 from flask_wtf.csrf import CSRFProtect
 from .db import init_db
@@ -48,7 +48,7 @@ def send_static(path):
 @app.route('/')
 @login_required
 def developer_root():
-    return render_template('developer.html', request=request)
+    return redirect(url_for('report.report_table_view'))
 
 
 # Run the Flask app

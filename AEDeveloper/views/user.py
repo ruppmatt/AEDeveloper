@@ -33,7 +33,7 @@ def load_identity(user_id):
     identity = DeveloperIdentity(tokenhash=user_id)
     retval = identity if identity.get_id() is not None else None
     ret_id = retval.get_id() if type(retval) != type(None) else 'Unauthorized'
-    print(F.YELLOW + ret_id + S.RESET_ALL)
+    print(F.YELLOW + str(ret_id) + S.RESET_ALL)
     return retval
 
 
@@ -84,7 +84,6 @@ def user_settings():
                 login_user(new_user)
                 if not is_url_safe(redirect_to, request.host_url):
                     return 'User updated.', 200
-                print(F.GREEN + redirect_to + S.RESET_ALL)
                 return redirect(redirect_to) if redirect_to is not None else redirect('/')
             except Exception as e:
                 return render_template(this_page, request=request, form=form, error='Unable to update user. ' + str(e))

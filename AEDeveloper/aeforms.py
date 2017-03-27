@@ -28,5 +28,12 @@ class AENewUserForm(FlaskForm):
 
 
 class AEChangeUserForm(AENewUserForm):
+    fullname = StringField('full name', \
+            validators=[DataRequired(), Length(min=1,max=size.fullname, message=fullname_length_msg)])
+    email = StringField('email', validators=[Length(max=size.email)])
+    password1 = StringField('password',\
+        validators=[DataRequired(), pwd_length_valid] )
+    password2 = StringField('confirm password',\
+        validators=[DataRequired(), pwd_length_valid, EqualTo('password1', message='Passwords must match')])
     oldpassword = StringField('old password',
         validators=[DataRequired(), pwd_length_valid])

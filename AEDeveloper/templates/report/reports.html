@@ -1,0 +1,59 @@
+{% extends 'base.html' %}
+
+{% block title %} Reports {% endblock %}
+{% block head %}
+  {{ super() }}
+  <link rel=stylesheet type=text/css href="/static/jquery.jsonview.css">
+{% endblock %}
+
+{% block heading %}Reports{% endblock %}
+
+{% block body %}
+  <script src='//ajax.googleapis.com/ajax/libs/dojo/1.10.4/dojo/dojo.js' data-dojo-config="
+      async:true,
+      packages: [
+          {name:'logs', location:'/static', main:'logs'},
+          {name:'jquery', location:'/static', main:'jquery-3.1.1.min'}
+        ]">
+  </script>
+
+  {{ super() }}
+  <div id='report_table'></div>
+
+
+  <script>
+    require([
+      'logs',
+      'dojo/dom',
+      'dojo/dom-construct',
+      'dojo/domReady!'
+    ], function(logs, dom, domConst, html){
+
+
+      /*
+      This function will generate our table from the GET request we received.
+      The fields are non-log elements retrieved
+      The files are fields that are used to generate the URLs to retrieve
+      particular log entries.
+      */
+      function generateTable(results){
+        //Generate the individual rows from our returned results
+        if (typeof results !== 'undefined'){
+          for (report of results){
+            var r = logs.generateReportElement(report);
+            domConst.place(r, 'report_table');
+          }
+        }
+      }
+
+
+      logs.getReportsMetadata(
+        function(response){
+          generateTable(response);
+        },
+        function(err){
+          domConst.place('<p>Error: <code>' + JSON.stringify(err.response) + '</code></p>', 'status');
+        });
+    });
+  </script>
+{% endblock %}
