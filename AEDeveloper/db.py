@@ -11,8 +11,9 @@ import json
 from colorama import Fore, Style
 
 
+db_uri = 'mysql+mysqlconnector://{user}:{password}@localhost/{database}'.format(**dbopts)
+engine = create_engine(db_uri, echo=True)
 
-engine = create_engine('mysql+mysqlconnector://root:ATestingPassword@localhost/test', echo=True)
 session = sessionmaker()
 session.configure(bind=engine)
 
@@ -46,6 +47,7 @@ class User(Base):
     activated = Column(Boolean())
     lastlogin = Column(DateTime())
     deleted = Column(Boolean())
+    receive_email = Column(Boolean())
 
     def __init__(self, **kw):
         self.username = kw['username']
@@ -55,6 +57,8 @@ class User(Base):
         self.email = kw['email'] if 'email' in kw else None
         self.activated = kw['activated'] if 'activated' in kw else False
         self.deleted = kw['deleted'] if 'deleted' in kw else False
+        self.receive_email = kw['receive_email'] if 'receive_email' in kw else False
+
 
 
 class Token(Base):
@@ -65,6 +69,7 @@ class Token(Base):
     lastlogin = Column(DateTime())
     expiration = Column(DateTime())
     deleted = Column(Boolean())
+
 
     def __init__(self, **kw):
         self.token = kw['token']
