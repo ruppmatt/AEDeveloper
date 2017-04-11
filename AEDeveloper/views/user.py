@@ -4,7 +4,7 @@ from flask_login import LoginManager, login_required, login_user, logout_user, c
 from colorama import Fore as F
 from colorama import Style as S
 from werkzeug.local import LocalProxy
-from ..aeforms import *
+from ..userforms import *
 from ..developer_identity import DeveloperIdentity, create_user, update_user, query_username
 from ..web_utils import is_url_safe
 
@@ -74,8 +74,8 @@ def logout():
 @login_required
 def user_settings():
     this_page = 'update_user.html'
-    form = AEChangeUserForm()
     if request.method == 'POST':
+        form = AEChangeUserForm()
         if form.validate_on_submit():
             try:
                 new_user = update_user(form, current_user)
@@ -92,7 +92,7 @@ def user_settings():
     if current_user.username is None:
         return 'No user session.', 400
     u = query_username(current_user.username)
-    form = AEChangeUserForm(obj=u, password1="", password2="", oldpassword="")
+    form = AEChangeUserForm(obj=u, password1='', password2='', oldpassword='')
     return render_template(this_page, request=request, form=form)
 
 

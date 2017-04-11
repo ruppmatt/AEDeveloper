@@ -28,11 +28,13 @@ def process_post():
         s.commit()
         logs = request.get_json(force=True)['logs']
         for name,data in logs.items():
+            print(Fore.RED + name + Style.RESET_ALL)
             l = db.Log(report_id=report.id, name=name, data=data)
             s.add(l)
+        s.commit()
         return '', 200
     except Exception as e:
-        return str(e), 403
+        return '', 403
 
 
 # Try to be RESTful and return the URIs (based on IDs) and comments for each
@@ -101,6 +103,7 @@ def get_log(id, log, mode):
         log_entry = lquery.one()
         if mode == 'raw':
             log_data = log_entry.data if not parse_session_log else parse_session_data(session_parsing[log], log_entry.data)
+            log_data = log_data.replace('\n','<br>')
             return log_data, 200
         elif mode == 'html':
             return render_template('log_html.html', report_id=id, log_name=log);

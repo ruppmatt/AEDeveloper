@@ -163,7 +163,7 @@ def update_user(form, current_user):
         raise IdentityIsNotValid
     if not password_ok(form.oldpassword.data, u.password):
         raise IdentityNotAuthenticated
-    u.username = form.username.data
+    u.username = current_user
     u.password = crypt_password(form.password1.data)
     u.tokenhash = generate_tokenhash(form.username.data, form.password1.data)
     u.fullname = form.fullname.data

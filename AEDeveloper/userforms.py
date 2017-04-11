@@ -1,6 +1,6 @@
 from flask_wtf import FlaskForm
 from flask_wtf.csrf import CSRFProtect
-from wtforms import StringField
+from wtforms import StringField, BooleanField, PasswordField
 from wtforms.validators import DataRequired, EqualTo, Length
 from  . import field_sizes as size
 
@@ -12,7 +12,7 @@ pwd_length_valid = Length(min=1, max=size.password, message=pwd_length_msg)
 
 class AELoginForm(FlaskForm):
     username = StringField('username', validators=[DataRequired()])
-    password = StringField('password', validators=[DataRequired(), pwd_length_valid])
+    password = PasswordField('password', validators=[DataRequired(), pwd_length_valid])
 
 
 class AENewUserForm(FlaskForm):
@@ -21,19 +21,21 @@ class AENewUserForm(FlaskForm):
     email = StringField('email', validators=[Length(max=size.email)])
     username = StringField('username',\
         validators=[DataRequired(), Length(min=1,max=size.username, message=user_length_msg)])
-    password1 = StringField('password',\
+    password1 = PasswordField('password',\
         validators=[DataRequired(), pwd_length_valid] )
-    password2 = StringField('confirm password',\
+    password2 = PasswordField('confirm password',\
         validators=[DataRequired(), pwd_length_valid, EqualTo('password1', message='Passwords must match')])
+    email_updates = BooleanField('receive updates')
 
 
-class AEChangeUserForm(AENewUserForm):
+class AEChangeUserForm(FlaskForm):
     fullname = StringField('full name', \
             validators=[DataRequired(), Length(min=1,max=size.fullname, message=fullname_length_msg)])
     email = StringField('email', validators=[Length(max=size.email)])
-    password1 = StringField('password',\
+    password1 = PasswordField('password',\
         validators=[DataRequired(), pwd_length_valid] )
-    password2 = StringField('confirm password',\
+    password2 = PasswordField('confirm password',\
         validators=[DataRequired(), pwd_length_valid, EqualTo('password1', message='Passwords must match')])
-    oldpassword = StringField('old password',
+    oldpassword = PasswordField('old password',
         validators=[DataRequired(), pwd_length_valid])
+    email_updates = BooleanField('receive updates')
