@@ -23,15 +23,26 @@ report = Blueprint('report', __name__, template_folder='../templates/report')
 def process_post():
     try:
         s = db.session()
+
+        # Add the report
         report = db.Report.from_post_request(request)
         s.add(report)
         s.commit()
+
+        #Add individual logs from the report
         logs = request.get_json(force=True)['logs']
         for name,data in logs.items():
             print(Fore.RED + name + Style.RESET_ALL)
             l = db.Log(report_id=report.id, name=name, data=data)
             s.add(l)
         s.commit()
+
+        #Add the freezer object
+        freezer = request.get_json(force=True)['freezer']
+        f = db.Freezer(report_id=report_id, contents=freezer)
+        s.add(f)
+        s.commit()
+
         return '', 200
     except Exception as e:
         return '', 403

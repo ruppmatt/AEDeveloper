@@ -9,6 +9,7 @@ from . import field_sizes as size
 import datetime
 import json
 from colorama import Fore, Style
+import zlib
 
 
 db_uri = 'mysql+mysqlconnector://{user}:{password}@localhost/{database}'.format(**dbopts)
@@ -120,6 +121,7 @@ class Report(Base):
     version = Column(String(size.version), nullable=True)
     screenSize = Column(String(size.screen_size), nullable=True)
     error = Column(String(size.error), nullable=True)
+    freezer = relationship('Freezer', back_populates='report')
 
     def __init__(self, **kw):
         self.ip = kw['ip'] if 'ip' in kw else None
@@ -154,6 +156,23 @@ class Report(Base):
             'version':f['version'] if 'version' in f else None,
         }
         return cls(**d)
+
+
+
+class Freezer(Base):
+    __tablename__ = 'freezer'
+    id = Column(Integer(), primary_key=True)
+    report_id = Column(Integer(), ForeignKey('report.id', onupdate='CASCADE', ondelete='CASCADE'))
+    contents = Column(LargeBinary(), nullable=False)
+    report = relationship('Report', back_populates='freezer')
+
+    def __init__(self, **kw):
+        self.report_id = kw['report_id']
+        self.contents = zlib.compress(kw['contents'].encode('utf-8'))
+
+    def freezer(self):
+        return zlib.decompress(self.contents).decode('utf-8')
+
 
 
 class Log(Base):
