@@ -1,3 +1,0 @@
-graft AEDeveloper/templates
-graft AEDeveloper/static
-include AEDeveloper/mysql.dump
