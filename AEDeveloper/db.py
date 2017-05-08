@@ -140,8 +140,8 @@ class Report(Base):
     @classmethod
     def from_post_request(cls, r):
         f = r.get_json(force=True)
-        print(Fore.MAGENTA,  f.keys(), Style.RESET_ALL)
-        print(r.user_agent)
+        #print(Fore.MAGENTA,  f.keys(), Style.RESET_ALL)
+        #print(r.user_agent)
         d = {
             'ip':r.remote_addr,
             'userAgent':str(r.user_agent),

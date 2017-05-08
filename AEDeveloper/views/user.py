@@ -29,11 +29,11 @@ def on_load(state):
 # the database or a token token.
 @login_manager.user_loader
 def load_identity(user_id):
-    print(F.CYAN + str(user_id) + S.RESET_ALL)
+    #print(F.CYAN + str(user_id) + S.RESET_ALL)
     identity = DeveloperIdentity(tokenhash=user_id)
     retval = identity if identity.get_id() is not None else None
     ret_id = retval.get_id() if type(retval) != type(None) else 'Unauthorized'
-    print(F.YELLOW + str(ret_id) + S.RESET_ALL)
+    #print(F.YELLOW + str(ret_id) + S.RESET_ALL)
     return retval
 
 

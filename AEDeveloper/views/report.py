@@ -32,7 +32,7 @@ def process_post():
         #Add individual logs from the report
         logs = request.get_json(force=True)['logs']
         for name,data in logs.items():
-            print(Fore.RED + name + Style.RESET_ALL)
+            #print(Fore.RED + name + Style.RESET_ALL)
             l = db.Log(report_id=report.id, name=name, data=data)
             s.add(l)
         s.commit()
