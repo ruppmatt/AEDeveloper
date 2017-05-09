@@ -1,4 +1,3 @@
--e git+git@github.com:ruppmatt/AEDeveloper.git@1fae147b205f788d7ec5af3997eda3645d9dc360#egg=AEDeveloper
 appdirs==1.4.0
 bcrypt==3.1.2
 blinker==1.4

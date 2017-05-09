@@ -1,0 +1,7 @@
+sudo git clone https://github.com/ruppmatt/AEDeveloper
+sudo chown www-data AEDeveloper
+cd AEDeveloper
+sudo virtualenv -p PATH_TO_PYTHON3 venv
+sudo sh -c ". venv/bin/activate ; pip3 install -r requirements.txt"
+sudo chown www-data venv
+
