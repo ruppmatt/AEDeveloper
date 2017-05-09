@@ -1,6 +1,6 @@
 # MySQL login credentials and options
 dbopts = {
-        'user':'ae_developer',
+        'user':'aedeveloper',
         'password':'ATestingPassword',
-        'database':'ae_developer',
+        'database':'aedeveloper',
 }
