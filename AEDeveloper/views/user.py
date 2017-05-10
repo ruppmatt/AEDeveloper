@@ -78,7 +78,7 @@ def user_settings():
         form = AEChangeUserForm()
         if form.validate_on_submit():
             try:
-                new_user = update_user(form, current_user)
+                new_user = update_user(form=form, user=current_user)
                 redirect_to = request.args.get('next')
                 logout_user()
                 login_user(new_user)
@@ -113,7 +113,7 @@ def newuser():
     if request.method == 'POST':
         if form.validate_on_submit():
             try:
-                create_user(form)
+                create_user(form=form)
                 return 'User created.', 200
             except Exception as e:
                 return render_template(this_page, request=request, form=form, error='Unable to add user.' + str(e))

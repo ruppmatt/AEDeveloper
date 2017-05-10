@@ -132,24 +132,41 @@ def query_username(u):
 
 
 
+def _make_user_dict(**kw):
+    d = {}
+    if 'form' in kw:
+        d['password'] = form.password1.data
+        d['username'] = form.username.data
+        d['fullname'] = form.fullname.data
+        d['email'] = form.fullname.data
+    else:
+        d['password'] = kw['password']
+        d['username'] = kw['username']
+        d['fullname'] = kw['fullname']
+        d['email'] = kw['email']
+    return d
+
+
 """
 Create a user from a WTF Form.
 """
-def create_user(form):
+def create_user(**kw):
+    d = _make_user_dict(**kw)
     s = session()
-    if s.query(User).filter(User.username == form.username.data).count() > 0:
+    if s.query(User).filter(User.username == d['username']).count() > 0:
         raise IdentityExistsException
-    password = crypt_password(form.password1.data)
-    tokenhash = generate_tokenhash(form.username.data, form.password1.data)
-    u = User(username = form.username.data,
+    password = crypt_password(d['password'])
+    tokenhash = generate_tokenhash(d['password'], d['password'])
+    u = User(username = d['username'],
         password = password,
         tokenhash = tokenhash,
-        fullname = form.fullname.data,
-        email = form.email.data)
+        fullname = d['fullname'],
+        email = d['email'])
     u.activated = True
     u.deleted = False
     s.add(u)
     s.commit()
+
 
 
 

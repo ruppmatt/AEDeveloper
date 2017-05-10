@@ -13,7 +13,7 @@ import zlib
 
 
 db_uri = 'mysql+mysqlconnector://{user}:{password}@localhost/{database}'.format(**dbopts)
-engine = create_engine(db_uri, echo=True)
+engine = create_engine(db_uri)
 
 session = sessionmaker()
 session.configure(bind=engine)
