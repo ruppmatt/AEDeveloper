@@ -7,6 +7,8 @@ from werkzeug.local import LocalProxy
 from ..userforms import *
 from ..developer_identity import DeveloperIdentity, create_user, update_user, query_username
 from ..web_utils import is_url_safe
+import sys
+import traceback
 
 
 
@@ -106,7 +108,7 @@ def show_management():
 
 
 @user.route('/user/create', methods=['GET', 'POST'])
-#@login_required
+@login_required
 def newuser():
     this_page = 'new_user.html'
     form = AENewUserForm()
@@ -116,7 +118,10 @@ def newuser():
                 create_user(form=form)
                 return 'User created.', 200
             except Exception as e:
-                return render_template(this_page, request=request, form=form, error='Unable to add user.' + str(e))
+                exc_type, exc_value, exc_traceback = sys.exc_info()
+                filename, lineno, funcname, txt = traceback.extract_tb(exc_traceback, 1)[-1]
+                err_txt = 'Unable to add user. Error @ {}:{}'.format(filename, lineno)
+                return render_template(this_page, request=request, form=form, error=err_txt)
         else:
             return render_template(this_page, request=request, form=form, error='Unable to add user.')
     return render_template(this_page, request=request, form=form)

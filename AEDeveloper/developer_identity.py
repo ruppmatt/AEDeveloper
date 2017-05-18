@@ -135,10 +135,10 @@ def query_username(u):
 def _make_user_dict(**kw):
     d = {}
     if 'form' in kw:
-        d['password'] = form.password1.data
-        d['username'] = form.username.data
-        d['fullname'] = form.fullname.data
-        d['email'] = form.fullname.data
+        d['password'] = kw['form'].password1.data
+        d['username'] = kw['form'].username.data
+        d['fullname'] = kw['form'].fullname.data
+        d['email'] = kw['form'].email.data
     else:
         d['password'] = kw['password']
         d['username'] = kw['username']
