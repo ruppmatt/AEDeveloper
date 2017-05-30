@@ -21,13 +21,11 @@ report = Blueprint('report', __name__, template_folder='../templates/report')
 @cross_origin()
 @csrf.exempt
 def process_post():
+    s = db.session()
     try:
-        s = db.session()
-
         # Add the report
         report = db.Report.from_post_request(request)
         s.add(report)
-        s.commit()
 
         #Add individual logs from the report
         logs = request.get_json(force=True)['logs']
@@ -35,17 +33,19 @@ def process_post():
             #print(Fore.RED + name + Style.RESET_ALL)
             l = db.Log(report_id=report.id, name=name, data=data)
             s.add(l)
-        s.commit()
 
         #Add the freezer object
         freezer = request.get_json(force=True)['freezer']
-        f = db.Freezer(report_id=report_id, contents=freezer)
+        f = db.Freezer(report_id=report.id, contents=freezer)
         s.add(f)
-        s.commit()
 
+        s.commit()
+        s.close()
         return '', 200
     except Exception as e:
-        return '', 403
+        s.rollback()
+        s.close()
+        return str(e), 500
 
 
 # Try to be RESTful and return the URIs (based on IDs) and comments for each

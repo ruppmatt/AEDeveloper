@@ -3,6 +3,7 @@ from sqlalchemy_utils import database_exists, create_database
 from sqlalchemy import create_engine, Column, ForeignKey, MetaData
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.types import Integer, String, Boolean, DateTime, Enum, LargeBinary, Text
+from sqlalchemy.dialects.mysql import MEDIUMBLOB
 import enum
 from .dbopts import dbopts
 from . import field_sizes as size
@@ -163,11 +164,13 @@ class Freezer(Base):
     __tablename__ = 'freezer'
     id = Column(Integer(), primary_key=True)
     report_id = Column(Integer(), ForeignKey('report.id', onupdate='CASCADE', ondelete='CASCADE'))
-    contents = Column(LargeBinary(), nullable=False)
+    contents = Column(MEDIUMBLOB(), nullable=False)
     report = relationship('Report', back_populates='freezer')
 
     def __init__(self, **kw):
         self.report_id = kw['report_id']
+        data = zlib.compress(kw['contents'].encode('utf-8'))
+        print(len(data))
         self.contents = zlib.compress(kw['contents'].encode('utf-8'))
 
     def freezer(self):
