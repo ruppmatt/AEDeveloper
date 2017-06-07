@@ -156,7 +156,7 @@ def create_user(**kw):
     if s.query(User).filter(User.username == d['username']).count() > 0:
         raise IdentityExistsException
     password = crypt_password(d['password'])
-    tokenhash = generate_tokenhash(d['password'], d['password'])
+    tokenhash = generate_tokenhash(d['username'], d['password'])
     u = User(username = d['username'],
         password = password,
         tokenhash = tokenhash,
