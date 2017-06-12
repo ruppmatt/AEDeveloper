@@ -2,7 +2,7 @@ from flask import Flask, send_from_directory, request, url_for, redirect
 from flask_cors import cross_origin, CORS
 from flask_wtf.csrf import CSRFProtect
 from .db import init_db
-
+from .config import appopts
 
 # Prepare database
 init_db()
@@ -10,7 +10,7 @@ init_db()
 
 # Setup our app
 app = Flask(__name__);  # Create flask application
-app.secret_key = 'Atefyej/ucithAmHasshacivyass2Om5'
+app.secret_key = appopts['secret_key']
 app.config['TEMPLATES_AUTO_RELOAD'] = True  # Reload our templates as we go along
 
 # Cross-site resource sharing support

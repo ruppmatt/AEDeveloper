@@ -4,3 +4,7 @@ dbopts = {
         'password':'ATestingPassword',
         'database':'aedeveloper',
 }
+
+appopts = {
+    'secret_key':'ATestingKey'
+}

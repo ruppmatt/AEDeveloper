@@ -5,7 +5,7 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.types import Integer, String, Boolean, DateTime, Enum, LargeBinary, Text
 from sqlalchemy.dialects.mysql import MEDIUMBLOB
 import enum
-from .dbopts import dbopts
+from .config import dbopts
 from . import field_sizes as size
 import datetime
 import json
