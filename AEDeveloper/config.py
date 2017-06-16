@@ -6,5 +6,8 @@ dbopts = {
 }
 
 appopts = {
-    'secret_key':'ATestingKey'
+    'secret_key':'ATestingKey',
+    'MAX_CONTENT_LENGTH': 256 * 1024 * 1024
 }
+
+dev_email = 'developer@avida-ed.msu.edu'

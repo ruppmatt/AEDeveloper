@@ -8,6 +8,7 @@ import base64
 from enum import Enum
 from .db import session, User, Token
 
+
 class SessionType(Enum):
     NONE = 0
     USER = 1
@@ -180,9 +181,10 @@ def update_user(form, current_user):
         raise IdentityIsNotValid
     if not password_ok(form.oldpassword.data, u.password):
         raise IdentityNotAuthenticated
-    u.username = current_user
+    print(u.username, form.password1.data)
+    u.username = current_user.username
     u.password = crypt_password(form.password1.data)
-    u.tokenhash = generate_tokenhash(form.username.data, form.password1.data)
+    u.tokenhash = generate_tokenhash(current_user.username, form.password1.data)
     u.fullname = form.fullname.data
     u.email = form.email.data
     s.commit()
@@ -232,7 +234,7 @@ Because tokens and usernames/passwords need to be stored the same for retrieval,
 from the hashes of the username and password and stored in the User table.
 """
 def generate_tokenhash(username, password):
-     return base64.b64encode(
+    return base64.b64encode(
         bytes_xor(
             hashlib.sha256(bytes(username, 'utf-8')).digest(),
             hashlib.sha256(bytes(password, 'utf-8')).digest()

@@ -79,16 +79,21 @@ def user_settings():
     if request.method == 'POST':
         form = AEChangeUserForm()
         if form.validate_on_submit():
-            try:
-                new_user = update_user(form=form, user=current_user)
+            #try:
+                new_user = update_user(form, current_user)
                 redirect_to = request.args.get('next')
                 logout_user()
                 login_user(new_user)
                 if not is_url_safe(redirect_to, request.host_url):
                     return 'User updated.', 200
                 return redirect(redirect_to) if redirect_to is not None else redirect('/')
-            except Exception as e:
-                return render_template(this_page, request=request, form=form, error='Unable to update user. ' + str(e))
+            #except Exception as e:
+                exc_type, exc_value, exc_traceback = sys.exc_info()
+                err_txt = '\n'
+                for tb in traceback.extract_tb(exc_traceback, 30):
+                    filename, lineno, funcname, txt = tb
+                    err_txt += 'Error @ {}:{}    \n'.format(filename, lineno, txt)
+                return render_template(this_page, request=request, form=form, error='Unable to update user. ' + err_txt)
         else:
             return render_template(this_page, request=request, form=form, error='Unable to update user. ')
     if current_user.username is None:

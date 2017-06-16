@@ -1,8 +1,10 @@
 from flask import Flask, send_from_directory, request, url_for, redirect
 from flask_cors import cross_origin, CORS
+from flask_mail import Mail
 from flask_wtf.csrf import CSRFProtect
 from .db import init_db
 from .config import appopts
+
 
 # Prepare database
 init_db()
@@ -12,6 +14,10 @@ init_db()
 app = Flask(__name__);  # Create flask application
 app.secret_key = appopts['secret_key']
 app.config['TEMPLATES_AUTO_RELOAD'] = True  # Reload our templates as we go along
+app.config['MAX_CONTENT_LENGTH'] = appopts['MAX_CONTENT_LENGTH']
+
+# Set up flask_mail
+mail = Mail(app)
 
 # Cross-site resource sharing support
 CORS(app, supports_credentials=True)
@@ -54,4 +60,4 @@ def developer_root():
 # Run the Flask app
 if __name__ == '__main__':
     port = 5000 if not len(sys.argv) == 2 else int(sys.argv[1])
-    app.run('127.0.0.1', port=port, debug=True)
+    app.run('127.0.0.1', port=port)

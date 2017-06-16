@@ -1,5 +1,6 @@
 from flask import Blueprint, render_template,request, redirect, abort, url_for
 from ..developer import csrf, login_required, cross_origin
+from ..email import mail_report_success, mail_report_error
 import pprint
 from .. import db
 from sqlalchemy import asc, desc
@@ -26,6 +27,7 @@ def process_post():
         # Add the report
         report = db.Report.from_post_request(request)
         s.add(report)
+        s.commit()
 
         #Add individual logs from the report
         logs = request.get_json(force=True)['logs']
@@ -41,12 +43,11 @@ def process_post():
 
         s.commit()
         s.close()
-        return '', 200
     except Exception as e:
         s.rollback()
         s.close()
         return str(e), 500
-
+    return '', 200
 
 # Try to be RESTful and return the URIs (based on IDs) and comments for each
 # entry in our database.  We're not going to send the entire log entry because
